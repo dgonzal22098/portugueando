@@ -15,6 +15,8 @@ RUN if [ ! -f src/assets/logos/logoUEANblanco.png ]; then \
 
 # Intentar la construcción
 RUN npm run build
+RUN npm install socket.io-client
+RUN npm install @tanstack/react-query
 
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html

@@ -8,7 +8,7 @@ router = APIRouter()
 
 @router.post("/users/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = crud.get_user(db, username=user.username)
+    db_user = crud.get_user(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
     db_email = db.query(models.User).filter(models.User.email == user.email).first()
@@ -32,7 +32,7 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
 
 @router.post("/login/")
 def login(form_data: schemas.UserLogin, db: Session = Depends(get_db)):
-    user = crud.get_user(db, username=form_data.username)
+    user = crud.get_user(db, email=form_data.email)
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     # En una aplicación real deberías verificar la contraseña con hashing

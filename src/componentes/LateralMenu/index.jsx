@@ -5,6 +5,7 @@ import { FaUserAlt as UserIC, FaBookReader as ReportesIC} from "react-icons/fa";
 import { ImStatsBars as DashboardIC} from "react-icons/im";
 import { AiOutlineLeftCircle as HideorShowIC} from "react-icons/ai";
 import { SlLogout as LogoutIC} from "react-icons/sl";
+import { IoIosHome as HomeIcon} from "react-icons/io";
 import { IoLibrary as CollectionIC} from "react-icons/io5";
 import { IoIosPersonAdd as TeacherIC} from "react-icons/io";
 import { FaPeopleGroup as GroupCreationIC} from "react-icons/fa6";
@@ -84,18 +85,21 @@ const getLinksByRole = (data) => {
 };
 
 const estudianteLinks = [
+  {label: "Home", icon: <HomeIcon />, to: "profile",},
   {label: "Perfil", icon: <UserIC />, to: "profile",},
   {label: "Material de apoyo", icon: <CollectionIC />, to: "material_apoyo",},
   {label: "Dashboard", icon: <DashboardIC />, to: "dashboard",},
   {label: "Mis reportes", icon: <ReportesIC />, to: "reportes",},
 ];
 const profesorLinks = [
+  {label: "Home", icon: <HomeIcon />, to: "home",},
   {label: "Perfil", icon: <UserIC />, to: "profile",},
   {label: "Reportes", icon: <ReportesIC />, to: "reportes",},
   {label: "Grupos y estudiantes", icon: <GroupCreationIC />, to: "grupos_docente",},
   {label: "Material de apoyo", icon: <CollectionIC />, to: "material_apoyo",},
 ];
 const adminLinks = [
+  {label: "Home", icon: <HomeIcon />, to: "home",},
   {label: "Perfil", icon: <UserIC />, to: "profile",},
   {label: "Registro Docente", icon: <TeacherIC />, to: "registro_profesor",},
   {label: "Cursos y grupos", icon: <CursosIC />, to: "cursos",},

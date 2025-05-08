@@ -42,3 +42,6 @@ export { default as GruposDocentesNivel } from './Grupos/GruposProfe/GroupsAssig
 
 // Exporta el componente MaterialApoyo (material de apoyo educativo) desde './MaterialApoyo'
 export { default as MaterialApoyo } from './MaterialApoyo';
+
+// Exporta el componente HomePage (Pagina de bienvenida) desde './HomePage'
+export { default as HomePage } from './HomePage';

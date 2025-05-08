@@ -1,5 +1,5 @@
 import { BrowserRouter,Routes,Route } from 'react-router-dom'
-import {NewPassword, Recover, Pruebas, Login, Dashboard, Profile, Reportes, Grupos, Cursos, GruposHistoricos, GruposDocente, GruposDocentesNivel, MaterialApoyo, RegistrarProfesor} from './routes'
+import {NewPassword, Recover, Pruebas, Login, Dashboard, Profile, Reportes, Grupos, Cursos, GruposHistoricos, GruposDocente, GruposDocentesNivel, MaterialApoyo, RegistrarProfesor, HomePage} from './routes'
 
 function App() {
 
@@ -10,6 +10,7 @@ function App() {
           <Route path="/recover" element={<Recover />} />
           <Route path="/newpassword" element={<NewPassword />} />
           <Route path="/pruebas" element={<Pruebas />}>
+            <Route path="home" element={<HomePage />} />
             <Route path="profile" element={<Profile />}/>
             <Route path="dashboard" element={<Dashboard />}/>
             <Route path="reportes" element={<Reportes />}/>

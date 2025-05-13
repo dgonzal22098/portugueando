@@ -2,6 +2,11 @@ import styled from "styled-components"
 import { useState } from "react"
 import ModalNewProfesor from "./ModalNewProfesor";
 
+// Formulario de nuevo profesor a registrar
+// Rol: Administrador
+// Logica: los datos recolectados en este formulario se envian al modal y este lo envia a la base de datos para que se registre un nuevo profesor.
+// Revisar: Agregar el icono de cerrar en la esquina superior derecha.
+
 const NewPersonForm = ({setMostrarFormulario}) => {
 
   const [showProfesorModal, setShowProfesorModal] = useState(false);

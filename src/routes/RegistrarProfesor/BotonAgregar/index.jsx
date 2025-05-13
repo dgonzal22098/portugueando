@@ -1,6 +1,8 @@
 import styled from "styled-components"
 import { IoAddOutline as AddIC} from "react-icons/io5";
 
+// Boton que muestra el formulario, no se necesita logica aca.
+
 const BotonAgregar = ({setMostrarFormulario}) => {
 
   return (

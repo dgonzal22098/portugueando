@@ -1,7 +1,9 @@
-
 import styled from "styled-components";
 import { IoClose } from "react-icons/io5";
 
+// Componente de alerta
+// Rol: Administrador
+// Logica: el modal solamente le envia la confirmacion al elemento padre (revisar logica para que envie el estado del nuevo profesor al main RegistrarProfesor
 
 const AlertActivation = ({setShowAlert, isActivated,setIsActivated}) => {
     

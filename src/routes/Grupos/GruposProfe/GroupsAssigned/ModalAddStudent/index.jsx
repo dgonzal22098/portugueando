@@ -1,7 +1,11 @@
 import styled from "styled-components";
 import { IoClose } from "react-icons/io5";
 
-// aca va la logica de enviar la informacion del estudiante nuevo que se ha agregado de forma manual a la base de datos
+// Modal de confirmacion del nuevo estudiante
+// Rol: Profesor
+// Funcion: Este modulo es una ventana pop up que muestra la informacion del estudiante que va a ser creado y enviado a la base de datos.
+// Logica: El modulo enviara la informacion del estudiante nuevo a la base de datos.
+// Pendiente: Se debe crear un pop up que confirme cuando el estudiante se creo con exito o ocurrio un error.
 
 const ModalStudentComp = ({setShowStudentModal, studentInfo, setShowStudentForm}) => {
     

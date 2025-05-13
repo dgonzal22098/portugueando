@@ -3,6 +3,10 @@ import { Link,useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {Card, Formulario, Inputs, Button} from '../../componentes'
 
+// Modulo de recuperacion de contraseña
+// Rol: Todos
+// Logica: desde aca se recuperaria la contraseña solamente cuando el usuario recibe su confirmacion.
+// Pendiente: Establecer la forma en la que el usuario va a recuperar su contraseña.
 
 const Recover = () => {
   const [submitted, setSubmitted] = useState(false);

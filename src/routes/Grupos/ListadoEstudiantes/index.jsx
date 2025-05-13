@@ -1,6 +1,9 @@
 import styled from "styled-components";
 import { IoClose } from "react-icons/io5";
 
+// Modal de lista de estudiantes, podria considerarse como la lista de estudiantes historicos
+// Rol: Administrador, Profesor
+// Logica: trae los datos de la base de datos, los estudiantes que hayan sido modificados en alguna forma, podria considerarse esta opcion.
 
 const ListadoEstudiantes = ({ setShowEstudiantes }) => {
   return (
@@ -76,6 +79,9 @@ const Modal = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  &::-webkit-scrollbar {
+      display: none;
+  }
 `;
 
 const EstudiantesList = styled.div`
@@ -83,6 +89,11 @@ const EstudiantesList = styled.div`
   flex-direction: column;
   gap: 1rem;
   padding-left: 2rem;
+  max-height: 100%;
+  overflow: auto;
+  &::-webkit-scrollbar {
+      display: none;
+  }
 `;
 
 const Estudiante = styled.div`

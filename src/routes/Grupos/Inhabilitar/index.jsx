@@ -1,8 +1,9 @@
 import styled from "styled-components"
 import { IoClose } from "react-icons/io5";
 
-
-//logica de inhabilitar un grupo, que se envia a la base de datos el nuevo estado del grupo
+// Modal de confirmacion, si desea inhabilitar el grupo.
+// Rol: Administrador
+// Logica: Inhabilitar un grupo, se envia a la base de datos el nuevo estado del grupo. Inahibilita automaticamente a los que tengan acceso a este grupo.
 
 const Inhabilitar = ({setShowInhabilitar}) => {
 

@@ -1,10 +1,21 @@
 import styled from "styled-components";
-import { NavLink } from "react-router-dom";
+import { useNavigate} from "react-router-dom";
 import { IoClose } from "react-icons/io5";
+import {useAuth} from "../../auth"
 
 
 const LogoutComp = ({setShowModal}) => {
-    
+
+    const { logout, isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+
+    if (!isAuthenticated) return null;
+
+    const handleLogout = () => {
+        logout();
+        navigate("/");
+        setShowModal(false);
+    }
 
     return (
         <ModalBackdrop onClick={() => setShowModal(false)}>
@@ -17,7 +28,7 @@ const LogoutComp = ({setShowModal}) => {
 
                 <ModalButtons>
 
-                    <NavLink to="/"><Confirm >Sí, cerrar sesión</Confirm></NavLink>
+                    <Confirm onClick={handleLogout}>Sí, cerrar sesión</Confirm>
 
                     <Cancel onClick={() => setShowModal(false)} >Cancelar</Cancel>
 

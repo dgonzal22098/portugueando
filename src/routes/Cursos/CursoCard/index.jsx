@@ -1,20 +1,27 @@
 import styled from "styled-components"
 
-const CursoCard = ({value, toGroups, toCrearGrupos}) => {
+// Plantilla de cursos que han sido creados por el administrador
+// Rol: Administrador
+// Logica: Abre el modal de crear un grupo y desde alla se envia la informacion del nuevo grupo a la base de datos.
+
+const CursoCard = ({value, toGroups, setShowCrearGrupoModal}) => {
 
 
     return (
     <Container>
         <h3 style={{marginBottom:"1rem"}}>{value}</h3>
+        
         <InfoCont>
             <p>Grupos creados: 1</p>
             <p>Grupos activos: 1</p>
             <p>Grupos inactivos: 1</p>
         </InfoCont>
+
         <ButtonGroup>
             <ButtonCurso onClick={toGroups}>Ver grupos</ButtonCurso>
-            <ButtonCurso onClick={toCrearGrupos}>Crear grupo</ButtonCurso>
+            <ButtonCurso onClick={setShowCrearGrupoModal}>Crear grupo</ButtonCurso>
         </ButtonGroup>
+
     </Container>)
 }
 

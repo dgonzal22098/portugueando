@@ -4,6 +4,11 @@ import { useState } from "react";
 import {Card, Formulario, Inputs, Button} from '../../componentes'
 
 
+//Modulo de nueva contraseña
+// Rol: Todos
+// Logica: Hace un envio del link de la nueva contraseña al correo registrado y desde alla se abre un link nuevo donde se puede recuperar contraseña, es una de las opciones a considerar.
+
+
 const NewPassword = () => {
 
     const [newPassword, setNewPassword] = useState("");

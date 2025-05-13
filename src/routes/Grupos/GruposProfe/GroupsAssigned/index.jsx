@@ -5,7 +5,14 @@ import { useNavigate } from "react-router-dom"
 import { MdFileUpload } from "react-icons/md";
 import { IoIosReturnLeft } from "react-icons/io";
 import UploadFile from "./ModalUpload";
-import ShowRegistrationForm from './ListStudent'
+import ShowRegistrationForm from './StudentRegistrationForm'
+import ListaEjemplo from "./ListaEjemplo";
+
+// Modulo dentro del grupo seleccionado
+// Rol: Profesor
+// Funcion: Este modulo muestra la informacion de los grupos asignados a cierto curso, permite subir el archivo excel de nuevos estudiantes y crear estudiantes manualmente uno por uno.
+// Logica: Solamente funciona para mostrar objetos, no tiene ninguna logica en este modulo.
+// Pendiente: revisar para que cuando se suba el archivo de nuevos estudiantes y se active el boton, pueda mostrar los estudiantes actualizados, tambien considerar la funcionalidad de que el docente pueda modificar cierto estudiante en especifico en el modulo de la lista directamente.
 
 const GruposDocentesNivel = () => {
   const location = useLocation();
@@ -13,6 +20,8 @@ const GruposDocentesNivel = () => {
   const navigate = useNavigate();
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [studentForm, setShowStudentForm] = useState(false);
+  const [studentUploaded, setStudentUploaded] = useState(false);
+  const [listaEstudiantesEjemplo, setListaEstudiantesEjemplo] = useState(false);
 
   const regresarButton = () => {
     navigate("/pruebas/grupos_docente"); 
@@ -42,6 +51,14 @@ const GruposDocentesNivel = () => {
 
           <p>Fecha de creación: 27-01-2024</p>
 
+          {studentUploaded && <Button 
+          style={{width:"49%"}} 
+          className="buttonIcon"
+          onClick={() => setListaEstudiantesEjemplo(true)}
+          >
+            Ver estudiantes
+          </Button>}
+
           <ButtonCont>
 
             <Button className="buttonIcon" onClick={() => setShowUploadModal(true)}>
@@ -66,7 +83,12 @@ const GruposDocentesNivel = () => {
         </Button>
 
       </CardContainer>
-      {showUploadModal && <UploadFile setShowUploadModal={setShowUploadModal}/>}
+
+      {showUploadModal && <UploadFile 
+      setShowUploadModal={setShowUploadModal} 
+      setStudentUploaded={setStudentUploaded}/>}
+
+      {listaEstudiantesEjemplo && <ListaEjemplo setListaEstudiantesEjemplo={setListaEstudiantesEjemplo}/>}
 
     </Container>)
 }
@@ -77,10 +99,14 @@ export default GruposDocentesNivel
 const Container = styled.div`
     padding: 2.5rem;
     width: 85%;
-    height: fit-content;
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
+    height: 100vh;
+    overflow: auto;
+    &::-webkit-scrollbar {
+        display: none;
+    }
 `
 const Titulo = styled.h1`
   font-size: 3rem;

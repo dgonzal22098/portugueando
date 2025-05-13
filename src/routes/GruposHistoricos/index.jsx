@@ -3,6 +3,10 @@ import styled from "styled-components"
 import { useNavigate } from "react-router-dom";
 import ListadoHistoricEstudiantes from "./HistoricStudents";
 
+// Modulo de grupos históricos
+// Rol: Administrador
+// Logica: Muestra los grupos antiguos que no sean de el semestre actual y la información de los estudiantes y profesores que estuvieron asignados a ese grupo.
+
 const GruposHistoricos = () => {
     const navigate = useNavigate();
 
@@ -41,10 +45,14 @@ export default GruposHistoricos
 const Container = styled.div`
     padding: 2.5rem;
     width: 75%;
-    height: fit-content;
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
+    height: 100vh;
+    overflow: auto;
+    &::-webkit-scrollbar {
+        display: none;
+    }
 `
 const Titulo = styled.h1`
   font-size: 3rem;

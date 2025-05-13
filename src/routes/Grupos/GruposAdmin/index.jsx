@@ -3,19 +3,24 @@ import { useNavigate } from "react-router-dom";
 import { FaHistory } from "react-icons/fa";
 import { IoMdAdd } from "react-icons/io";
 import { useState } from "react";
-import ListadoEstudiantes from "../Estudiantes";
+import ListadoEstudiantes from "../ListadoEstudiantes";
 import Inhabilitar from "../Inhabilitar";
+import CrearGrupoModal from "../../Cursos/CrearGrupoModal";
 
-// falta la logica de que despues de agregar un grupo se muestre automaticamente dentro de la seccion de cursos y grupos en su respectivo nivel, asi de como mostrar en los historicos, aunque tendriamos que determinar si alguna fecha es la que categoriza a los grupos historicos, o todos incluyendo los actuales
+
+// Modulo interior dentro de la opcion "Ver grupos" en la ruta de /cursos que solo pertenece al administrador.
+// Rol: Administrador
+// Logica: Este modulo muestra los grupos creados en cierto nivel, con la informacion del docente responsable, la cantidad de estudiantes que el docente ha registrado, la fecha de creacion del grupo, y el horario del grupo. Tiene el modal de mostrar los estudiantes registrados, dentro de modal la opcion de descargar la lista de excel y la opcion de inhabilitar el grupo especifico.
+// Se deben traer los datos de los grupos de la base de datos, aca se validan los datos del grupo, se traen y se muestran en el GroupContainer. Si se inhabilita, se debe enviar el nuevo estado a la base de datos.
+// Pendiente: Falta la logica de que despues de agregar un grupo se muestre automaticamente dentro de la seccion de cursos y grupos en su respectivo nivel, asi de como mostrar en los historicos, aunque tendriamos que determinar si alguna fecha es la que categoriza a los grupos historicos o todos incluyendo los actuales. Revisar si podemos permitir editar el grupo existente y guardar los cambios que se hagan sobre ese mismo grupo, cambios permitidos como horario, docente o estado.
+// Pendiente: enviar la creación de grupo dentro de este mismo nivel ya que el admin esta metido en un nivel especifico, si quiere crear grupo desde aca o desde afuera en la vista general de cursos, se debe obtenerse el nombre del curso y asi se autorellenaria.
 
 const Grupos = () => {
   const navigate = useNavigate();
   const [showEstudiantes, setShowEstudiantes] = useState(false);
   const [showInhabilitar, setShowInhabilitar] = useState(false);
+  const [showCrearGrupo, setShowCrearGrupo] = useState(false);
 
-  const iraCrearGrupos = () => {
-    navigate("/pruebas/group_creation");
-  }
 
   const regresarOption = () => {
     navigate("/pruebas/cursos");
@@ -28,53 +33,88 @@ const Grupos = () => {
   return (
   <Container>
     <Titulo>
-      Grupos
+      Grupos creados
       <Buttons className="regresar" onClick={regresarOption}>Regresar</Buttons>
     </Titulo>
 
-    <GroupContainer>
-      <h3>Grupo 1</h3>
-      <p>Docente: Juan Manuel Santos</p>
-      <p>Cantidad de estudiantes: 25</p>
-      <p>Fecha de creación: 27-1-2024</p>
-      <p>Horario: 4 - 6 pm</p>
-      <ButtonGroup>
-        <Buttons className="estudiantes" onClick={() => setShowEstudiantes(true)}>Ver estudiantes</Buttons>
-        <Buttons className="inactivar" onClick={() => setShowInhabilitar(true)}>Inhabilitar</Buttons>
-      </ButtonGroup>
-    </GroupContainer>
-    <GroupContainer>
-      <h3>Grupo 2</h3>
-      <p>Docente: Jeison Castaño</p>
-      <p>Cantidad de estudiantes: 30</p>
-      <p>Fecha de creación: 27-1-2024</p>
-      <p>Horario: 6 - 8 pm</p>
-      <ButtonGroup>
-        <Buttons className="estudiantes" onClick={() => setShowEstudiantes(true)}>Ver estudiantes</Buttons>
-        <Buttons className="inactivar" onClick={() => setShowInhabilitar(true)}>Inhabilitar</Buttons>
-      </ButtonGroup>
-    </GroupContainer>
+    {gruposInfo.map((grupo, index) => (
+      <GroupContainer key={index}>
+        <h3>{grupo.titulo}</h3>
+        <p>Docente: {grupo.docente}</p>
+        <p>Cantidad de estudiantes: {grupo.cantidadEstudiantes}</p>
+        <p>Fecha de creación: {grupo.fechaCreacion}</p>
+        <p>Horario: {grupo.horario}</p>
+        <ButtonGroup>
+          <Buttons className="estudiantes" onClick={() => setShowEstudiantes(true)}>Ver estudiantes</Buttons>
+          <Buttons className="inactivar" onClick={() => setShowInhabilitar(true)}>Inhabilitar</Buttons>
+        </ButtonGroup>
+      </GroupContainer>
+    ))}
 
     <GroupContainer className="additionalButtons">
-      <Buttons className="agregarButton" onClick={iraCrearGrupos}>Crear grupo<IoMdAdd /></Buttons>
+      <Buttons className="agregarButton" onClick={() => setShowCrearGrupo(true)}>Crear grupo<IoMdAdd /></Buttons>
       <Buttons className="agregarButton" onClick={iraHistorial}>Historial de grupos<FaHistory /></Buttons>
     </GroupContainer>
 
     {showEstudiantes && <ListadoEstudiantes setShowEstudiantes={setShowEstudiantes}/>}
     {showInhabilitar && <Inhabilitar setShowInhabilitar={setShowInhabilitar}/>}
+    {showCrearGrupo && <CrearGrupoModal setShowCrearGrupoModal={setShowCrearGrupo}/>}
   </Container>
   )
 }
 
 export default Grupos
 
+const gruposInfo = [
+  {
+    titulo:"Grupo 1",
+    docente:"Mariano Ospina",
+    cantidadEstudiantes:"25",
+    fechaCreacion:"12-01-2024",
+    horario:"6 pm - 8 pm",
+    estado:"activo",
+    id:""
+  },
+  {
+    titulo:"Grupo 2",
+    docente:"Alejo Ospina",
+    cantidadEstudiantes:"30",
+    fechaCreacion:"12-01-2024",
+    horario:"6 pm - 8 pm",
+    estado:"activo",
+    id:""
+  },
+  {
+    titulo:"Grupo 3",
+    docente:"Juan Manuel Santos",
+    cantidadEstudiantes:"25",
+    fechaCreacion:"12-01-2024",
+    horario:"6 pm - 8 pm",
+    estado:"activo",
+    id:""
+  },
+  {
+    titulo:"Grupo 4",
+    docente:"Silvana Lopez",
+    cantidadEstudiantes:"25",
+    fechaCreacion:"12-01-2024",
+    horario:"6 pm - 8 pm",
+    estado:"activo",
+    id:""
+  },
+];
+
 const Container = styled.div`
     padding: 2.5rem;
     width: 75%;
-    height: fit-content;
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
+    height: 100vh;
+    overflow: auto;
+    &::-webkit-scrollbar {
+        display: none;
+    }
 `
 const Titulo = styled.h1`
   font-size: 3rem;

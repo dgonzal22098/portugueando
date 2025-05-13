@@ -1,5 +1,11 @@
 import styled from "styled-components"
 
+// Plantilla de Curso asignado
+// Rol: Profesor
+// Funcion: Plantilla para los cursos que le fueron asignados a los docentes asi como el conteo de sus grupos.
+// Logica: Se debe obtener el nombre del curso (nivel del curso) donde el profesor esta asignado.
+// Logica: Se debe obtener el conteo de los grupos que han sido creados, activados y los que no estan activos desde la base de datos
+
 const GrupoCard = ({value, onNavigate}) => {
 
 
@@ -11,6 +17,7 @@ const GrupoCard = ({value, onNavigate}) => {
             <p>Grupos activos: 1</p>
             <p>Grupos inactivos: 1</p>
         </InfoCont>
+
         <ButtonCurso onClick={() => onNavigate(value)}>Ver grupos asignados</ButtonCurso>
 
     </Container>)
@@ -27,6 +34,7 @@ const Container = styled.div`
     flex-direction: column;
     align-items: center;
     border: 1px #d0d0d0 solid;
+    background-color: white;
 `
 const InfoCont = styled.div`
     display: flex;

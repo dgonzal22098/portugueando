@@ -5,6 +5,11 @@ import { IoIosArrowDroprightCircle as Arrow} from "react-icons/io";
 import { FaToggleOn as ToggleOn, FaToggleOff as ToggleOff } from "react-icons/fa";
 import AlertActivation from "../Alert";
 
+// Componente de informacion de un docente
+// Rol: Administrador
+// Logica: Este componente muestra la informacion de los docentes registrado
+// Revisar: Logica para que el estado del profesor si es cambiado se obtenga del modal Alert
+
 const InformativeCard = ({usuario}) => {
 
     const [isActivated, setIsActivated] = useState(true);
@@ -115,8 +120,12 @@ const Boton = styled.div`
   }
 `
 const DataHeader = styled.div`
-  padding: 1rem;
-  border: 0.5px #a6a6a6 solid;
-  border-radius: 5px;
-  width: 100%;
+    padding: 1rem;
+    border: 0.5px #a6a6a6 solid;
+    border-radius: 5px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    
 `

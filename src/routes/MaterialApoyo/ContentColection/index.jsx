@@ -1,9 +1,16 @@
+import { useState } from "react";
 import styled from "styled-components"
+import NuevoItem from "./AddTitle";
 
-// valor agregado, que al ingresar a cada titulo se pueda saber mas acerca del titulo o del link como tal con un boton de ver mas usando el parametro ({colectionName, onVerMas }) del componente
+// Modulo de coleccion seleccionada
+// Rol: Estudiante, Profesor
+// Logica: Muestra los items creados dentro de una coleccion, para el profesor estara habilitado la opcion de crear un nuevo item y editarlo, para estudiante solamente podra revisar y acceder al contenido. Este modulo debera enviar la informacion del nuevo item creado a la base de datos, solo cuando este habilitado el docente.
+// Valor agregado: que al ingresar a cada titulo se pueda saber mas acerca del titulo o del link como tal con un boton de ver mas usando el parametro ({colectionName, onVerMas }) del componente
+
+const ContentColection = ({selectedColection, setShowColection, setShowColectionContent, setSelectedColection, usuario}) => {
 
 
-const ContentColection = ({colection, setShowColection, setShowColectionContent, setSelectedColection }) => {
+    const [showAddItem,setShowAddItem] = useState(false);
 
     const handleCancel = () => {
         setShowColection(true);
@@ -15,86 +22,41 @@ const ContentColection = ({colection, setShowColection, setShowColectionContent,
     return (
     <Container >
 
-        <h1 style={{ marginBottom:"2rem" }}>{colection.titulo}</h1>
+        <h1 style={{ marginBottom:"2rem" }}>{selectedColection.titulo}</h1>
 
         <Row className="encabezado">
-            <h3>Enlace a item de mejora</h3>
+            <h3>Recurso para fortalecer competencias</h3>
             <h3>Fecha de creación</h3>
         </Row>
 
-        {colection.contenidos.map((item, index) => (
+        {selectedColection.contenidos.map((item, index) => (
             <Row key={index}>
                 <Titulo><a >{item.titulo}</a></Titulo>
                 <Fecha>{item.fecha}</Fecha>
                 {/* <VerMasBtn onClick={() => onVerMas(item)}>Ver más</VerMasBtn> */}
             </Row>
         ))}
-        <ButtonCont>
 
-            <Button >Agregar colección</Button>
-            <Button 
-            className="regresar" 
-            onClick={handleCancel}>Volver</Button>
+        {usuario.rol === 'Profesor' &&
+        
+          <ButtonCont>
 
-        </ButtonCont>
+              <Button onClick={() => setShowAddItem(true)}>Agregar item</Button>
+              <Button 
+              className="regresar" 
+              onClick={handleCancel}>Volver</Button>
+
+          </ButtonCont>
+        }
+        
+        {showAddItem && <NuevoItem setShowAddItem={setShowAddItem}/>}
+
+
     </Container>)
   
 }
 
 export default ContentColection
-
-const Titulos = [
-    {
-      titulo: "Título 1: Gramática Intermedia",
-      fecha: "10/08/24",
-      etiquetas: ["gramática", "estructura", "intermedio"],
-    },
-    {
-      titulo: "Título 2: Guía de Verbos Irregulares",
-      fecha: "22/08/24",
-      etiquetas: ["verbos", "tiempos", "irregular"],
-    },
-    {
-      titulo: "Título 3: Práctica de Pronunciación",
-      fecha: "05/09/24",
-      etiquetas: ["oralidad", "pronunciación", "fonética"],
-    },
-    {
-      titulo: "Título 4: Lecturas Cortas en Portugués",
-      fecha: "19/09/24",
-      etiquetas: ["lectura", "comprensión", "portugués"],
-    },
-    {
-      titulo: "Título 5: Fonética Básica",
-      fecha: "03/10/24",
-      etiquetas: ["fonética", "básico", "oralidad"],
-    },
-    {
-      titulo: "Título 6: Podcast Educativo - Unidad 1",
-      fecha: "17/10/24",
-      etiquetas: ["audio", "escucha", "unidad 1"],
-    },
-    {
-      titulo: "Título 7: Video - Conversación Cotidiana",
-      fecha: "30/10/24",
-      etiquetas: ["video", "diálogo", "fluidez"],
-    },
-    {
-      titulo: "Título 8: Evaluación Formativa A1",
-      fecha: "14/11/24",
-      etiquetas: ["evaluación", "nivel A1", "repaso"],
-    },
-    {
-      titulo: "Título 9: Expresiones Comunes",
-      fecha: "07/12/24",
-      etiquetas: ["expresiones", "cotidianas", "uso diario"],
-    },
-    {
-      titulo: "Título 10: Juegos de Repaso",
-      fecha: "20/01/25",
-      etiquetas: ["juegos", "dinámico", "repaso"],
-    },
-  ];
 
 const Container = styled.div`
     margin: 2rem 0;

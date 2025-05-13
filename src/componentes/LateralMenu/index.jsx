@@ -5,13 +5,14 @@ import { FaUserAlt as UserIC, FaBookReader as ReportesIC} from "react-icons/fa";
 import { ImStatsBars as DashboardIC} from "react-icons/im";
 import { AiOutlineLeftCircle as HideorShowIC} from "react-icons/ai";
 import { SlLogout as LogoutIC} from "react-icons/sl";
+import { IoIosHome as HomeIcon} from "react-icons/io";
 import { IoLibrary as CollectionIC} from "react-icons/io5";
 import { IoIosPersonAdd as TeacherIC} from "react-icons/io";
 import { FaPeopleGroup as GroupCreationIC} from "react-icons/fa6";
 import { PiFoldersFill as CursosIC} from "react-icons/pi";
 import LogoPortugueando from '../../assets/logos/logoPortugueandoBlanco.png'
 import LogoutComp from "../LogoutComp";
-
+import Tooltip from '@mui/material/Tooltip';
 
 
 const LateralMenu = ({isOpen, showSideBar,data}) => {
@@ -19,7 +20,9 @@ const LateralMenu = ({isOpen, showSideBar,data}) => {
   const [showModal, setShowModal] = useState(false);
   const location = useLocation();
 
+
   const linksArray = getLinksByRole(data.rol);
+
 
   return (
     <Container isOpen={isOpen}>
@@ -41,22 +44,32 @@ const LateralMenu = ({isOpen, showSideBar,data}) => {
             (location.pathname.includes("/pruebas/grupos_docente") ||
             location.pathname.includes("/pruebas/groups_assigned_docente")));
 
-             return (
-              <div className="LinkContainer" key={label}>
-                <NavLink
-                  to={to}
-                  className={({ isActive }) =>
-                    `Link ${isActive || isActiveManually ? "active" : ""}`
-                  }
-                >
-                  <div className="LinkIcon">{icon}</div>
-                  {isOpen && <span>{label}</span>}
-                </NavLink>
-              </div>
-            );
-          })}
+          return (
 
-        <LogoutOption onClick={() => setShowModal(true)}>
+               <Tooltip title={label} arrow placement="right">
+
+                   <div className="LinkContainer" key={label}>
+
+                       <NavLink
+                           to={to}
+                           className={({ isActive }) =>
+                               `Link ${isActive || isActiveManually ? "active" : ""}`
+                           }
+                       >
+                           <div className="LinkIcon">{icon}</div>
+                           {isOpen && <span>{label}</span>}
+                       </NavLink>
+                   </div>
+               </Tooltip>
+          );
+
+        })}
+
+        <LogoutOption 
+        onClick={
+          () => 
+            setShowModal(true)
+          }>
           <div className="CloseSesion">
             <LogoutIC className="LogoutIcon" />
             {isOpen && <span>Cerrar Sesión</span>}
@@ -84,22 +97,24 @@ const getLinksByRole = (data) => {
 };
 
 const estudianteLinks = [
+  {label: "Home", icon: <HomeIcon />, to: "home",},
   {label: "Perfil", icon: <UserIC />, to: "profile",},
-  {label: "Colecciones", icon: <CollectionIC />, to: "collection",},
+  {label: "Material de apoyo", icon: <CollectionIC />, to: "material_apoyo",},
   {label: "Dashboard", icon: <DashboardIC />, to: "dashboard",},
   {label: "Mis reportes", icon: <ReportesIC />, to: "reportes",},
 ];
 const profesorLinks = [
+  {label: "Home", icon: <HomeIcon />, to: "home",},
   {label: "Perfil", icon: <UserIC />, to: "profile",},
   {label: "Reportes", icon: <ReportesIC />, to: "reportes",},
   {label: "Grupos y estudiantes", icon: <GroupCreationIC />, to: "grupos_docente",},
   {label: "Material de apoyo", icon: <CollectionIC />, to: "material_apoyo",},
 ];
 const adminLinks = [
+  {label: "Home", icon: <HomeIcon />, to: "home",},
   {label: "Perfil", icon: <UserIC />, to: "profile",},
   {label: "Registro Docente", icon: <TeacherIC />, to: "registro_profesor",},
   {label: "Cursos y grupos", icon: <CursosIC />, to: "cursos",},
-  {label: "Crear grupo", icon: <GroupCreationIC />, to: "group_creation",},
 ];
 const LogoutOption = styled.div`
   margin: 1rem 0;
@@ -150,9 +165,53 @@ const Container = styled.div`
   width: ${({ isOpen }) => (isOpen ? "250px" : "95px")};
   transition: all 0.3s ease;
   background-color: black;
-  height: auto;
+  height: 100vh;
   position: sticky;
   padding: 2rem 2rem ;
+
+  nav {
+    .LinkContainer {
+      margin: 1rem 0;
+
+      .Link {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        transition: background-color 0.2s;
+
+        &:hover {
+          color: black;
+          background-color: grey;
+        }
+
+        &.active {
+          color: #3BAC52;
+          border-radius: 8px;
+
+          &:hover {
+            background-color: grey;
+            color: black;
+          }
+        }
+
+        .LinkIcon {
+          font-size: 1.2rem;
+          margin-right: ${({ isOpen }) => (isOpen ? "10px" : "0")};
+        }
+
+        span {
+          white-space: nowrap;
+        }
+      }
+    }
+  }
+
+
 
   .SidebarButton {
     font-size: 1.3rem;
@@ -171,46 +230,7 @@ const Container = styled.div`
     transition: transform 0.3s;
     cursor: pointer;
   }
-
-  .LinkContainer {
-    margin: 1rem 0;
-
-    .Link {
-      display: flex;
-      align-items: center;
-      text-decoration: none;
-      color: white;
-      padding: 0.5rem;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      font-weight: bold;
-      transition: background-color 0.2s;
-
-      &:hover {
-        color: black;
-        background-color: grey;
-      }
-
-      &.active {
-        color: #3BAC52;
-        border-radius: 8px;
-        
-        &:hover{
-          background-color: grey;
-          color: black;
-        }
-      }
-
-      .LinkIcon {
-        font-size: 1.2rem;
-        margin-right: ${({ isOpen }) => (isOpen ? "10px" : "0")};
-      }
-
-      span {
-        white-space: nowrap;
-      }
-    }
-  }
+  
 
 `;
 

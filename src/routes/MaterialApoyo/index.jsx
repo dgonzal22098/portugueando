@@ -1,22 +1,33 @@
 import styled from "styled-components"
 import { TextField } from "@mui/material"
 import { CiSearch } from "react-icons/ci";
-import ColectionCard from "./ColectionCard";
-import ContentColection from './ContentColection'
 import { useState } from "react";
-import SamplePictureLogo from '../../assets/logos/imagenIconSample.webp'
 import { IoMdAdd } from "react-icons/io";
+import { useOutletContext } from "react-router-dom";
+import SamplePictureLogo from '../../assets/logos/imagenIconSample.webp'
+import SamplePicture from '../../assets/logos/sampleImg.png'
+import ContentColection from './ContentColection';
+import ColectionCard from "./ColectionCard";
+import NuevaColeccion from "./NuevaColeccion/index.jsx";
+
+// Modulo de las colecciones disponibles
+// Rol: Profesor, Estudiante
+// Logica: El modulo trae las colecciones creadas por el docente para cierto grupo, el cual esta disponible tambien para los estudiantes, la otra funcionalidad necesaria en este modulao es la de enviar la informacion de la coleccion nueva a la base de datos.
+// Pendiente: Agregar el input de una imagen que el profesor quiera poner en la coleccion o si prefiere con la imagen por defecto.
+// Pendiente: Implementar la logica de buscar dentro de los titulos ya sea con palabras claves o con el nombre de la coleccion.
 
 const MaterialApoyo = () => {
-    const [selectedColection, setSelectedColection] = useState(null);
+    const {usuario} = useOutletContext();
     const [showColection, setShowColection] = useState(true);
     const [showColectionContent, setShowColectionContent] = useState(false);
+    const [selectedColection, setSelectedColection] = useState(null);
     const [colectionName, setColectionName] = useState("");
+
 
     return (
     <Container>
 
-        <h1 style={{fontSize: "3rem", marginBottom:"2rem"}}>Colecciones</h1>
+        <h1 style={{fontSize: "3rem", marginBottom:"2rem"}}>Material de apoyo - colecciones</h1>
 
         <SearchContainer>
             <TextField id="outlined-basic" label="Buscar aqui..." variant="outlined" style={SearchBoxStyle} sx={{borderRadius:"5px"}}>
@@ -29,31 +40,25 @@ const MaterialApoyo = () => {
             {Titles.map((coleccion, index) => 
                 <ColectionCard 
                 key={index} 
-                titulo={coleccion.titulo} 
+                titulo={coleccion.titulo}
+                picture={SamplePicture}
                 etiquetas={coleccion.contenidos.flatMap(item => item.etiquetas)}
                 onAcceder={() => {
                     setShowColection(false);
-                    setShowColectionContent(false);
+                    setShowColectionContent(true);
                     setColectionName(coleccion.titulo);
-                    setSelectedColection(Titles);
+                    setSelectedColection(coleccion);
                 }}
             />)}
 
-            <ContainerNew >
-                <Imagen src={SamplePictureLogo}/>
-                <div style={{width:"55%"}}>
-                <h2 style={{marginBottom:"2.5rem"}}>Agregar nueva colección</h2>
+            {usuario.rol === 'Profesor' && <NuevaColeccion />}
 
-                <Button>
-                    Agregar
-                    <IoMdAdd className="addIcon"/>
-                </Button>
-            </div>
-            </ContainerNew>
 
         </ColectionContainer>}
+
         {showColectionContent && <ContentColection 
-        colection={selectedColection}
+        usuario={usuario}
+        selectedColection={selectedColection}
         setShowColection={setShowColection}
         setShowColectionContent={setShowColectionContent}
         setSelectedColection={selectedColection}
@@ -95,7 +100,7 @@ const Titles = [
         },
       ],
     },
-    // y así para las demás...
+
   ];
 const SearchBoxStyle = {
     backgroundColor: "white",
@@ -104,16 +109,21 @@ const SearchBoxStyle = {
 const Container = styled.div`
     padding: 2.5rem;
     width: 70%;
-    height: fit-content;
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
+    height: 100vh;
+    overflow: auto;
+    &::-webkit-scrollbar {
+        display: none;
+    }
     `
 const SearchContainer = styled.div`
     display: flex;
     gap: 15px;
     align-items: center;
     width: 100%;
+    z-index: 800;
     .SearchIcon{
         font-size: 1.5rem;
         &:hover{
@@ -129,6 +139,7 @@ const ColectionContainer = styled.div`
     padding: 2rem 0;
 `
 const ContainerNew = styled.div`
+
     width: 100%;
     height: 240px;
     display: flex;

@@ -3,11 +3,15 @@ import SamplePicture from '../../../assets/logos/sampleImg.png'
 import Chip from '@mui/material/Chip';
 import { Stack } from "@mui/material";
 
-const ColectionCard = ({titulo, etiquetas, onAcceder}) => {
+// Plantilla de Colecciones
+// Rol: Profesor , Estudiantes
+// Logica: Esta plantilla utiliza los datos de las colecciones que el profesor ha creado en cierto nivel y le permite a la plantilla mostrarlos, no hay logica necesaria en este modulo ya que solo es plantilla.
+
+const ColectionCard = ({titulo, etiquetas, onAcceder, picture}) => {
   
     return (
         <Container>
-            <Imagen src={SamplePicture}/>
+            <Imagen src={picture}/>
             <div style={{width:"55%"}}>
                 <h2>{titulo}</h2>
 
@@ -36,7 +40,7 @@ export default ColectionCard
 
 const Container = styled.div`
     width: 100%;
-    height: 240px;
+    height: fit-content;
     display: flex;
     background-color: white;
     border-radius: 15px;

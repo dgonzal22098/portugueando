@@ -2,11 +2,13 @@ import styled from "styled-components"
 import { useState } from "react";
 import ModalStudentComp from "../ModalAddStudent";
 
-// aca va la logica de enviar el excel con los datos del grupo de estudiantes dentro del documento de excel a la base de datos para el registrofalta 
-// falta mostrar el toast notification que es un pop up cuando se agrega un nuevo estudiante o una lista de forma adecuada
-// falta mostrar el boton de la lista de estudiantes que acaban de ser registrados despues de haberse agregado ya sea por lista excel o manualmente
+// Formulario para registrar un estudiante de forma manual
+// Rol: Profesor
+// Funcion: Formulario de nuevo estudiante, cuando el docente desea añadir a un estudiante de forma manual. Este modulo muestra un modal cuando se va a agregar un nuevo estudiante y muestra la informacion a punto de enviarse a la base de datos.
+// Logica: La logica de este modulo se basa en enviar la informacion del nuevo estudiante desde el formulario a la base de datos.
+// Pendiente: Falta mostrar el toast notification que es un pop up cuando se agrega un nuevo estudiante o una lista de forma adecuada. Falta mostrar el boton de la lista de estudiantes que acaban de ser registrados despues de haberse agregado ya sea por lista excel o manualmente.
 
-const ShowRegistrationForm = ({onCancel, setShowStudentForm}) => {
+const StudentRegistrationForm = ({onCancel, setShowStudentForm}) => {
 
     const [studentModal, setShowStudentModal] = useState(false);
     const [studentInfo, setInfoStudent] = useState({});
@@ -52,7 +54,7 @@ const ShowRegistrationForm = ({onCancel, setShowStudentForm}) => {
     )
 }
 
-export default ShowRegistrationForm
+export default StudentRegistrationForm
 
 const fields = [
   {name: "fullName", label:"Nombres y apellidos", type:"text",placeholder:"Sin caracteres especiales..."},

@@ -1,14 +1,12 @@
 import {styled} from "styled-components";
 import { Link } from "react-router-dom";
-import {Card, Formulario, Button} from '../../componentes'
+import {Card, Formulario, Inputs, Button} from '../../componentes'
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import axios from "axios";
 import TextField from '@mui/material/TextField';
 
-// Main de Login
-// Rol: Todos
-// Logica: Toma los datos del usuario y los envia al back para su respectiva validacion, envia errores cuando no se procesa de forma correcta y redirige al home page cuando la validacion es correcta, tambien envia a la pagina de recuperar contraseña cuando no se recuerda.
-// Pendiente: Sincronizar codigo con el de daniel para que el haga la validacion del login.
+// quedaria pendiente asegurarse de que el error que tenga la validacion se muestre en el texthelper 
 
 const Login = () => {
     const navigate = useNavigate();
@@ -17,65 +15,31 @@ const Login = () => {
     const [error, setError] = useState("");
     const [inputError, setInputError] = useState({ email: false, contrasena: false });
 
-    const usuarios = [
-        {
-            name: "Diego Alejandro Gonzalez Parra",
-            email:"dgonzal22098@universidadean.edu.co",
-            password:"estudiante789",
-            cedula:"1108122098",
-            dob:"26-01-1999",
-            rol:"Estudiante",
-        },
-        {
-            name: "Antonio Lobato",
-            email:"alobato19501@universidadean.edu.co",
-            password:"admin123",
-            cedula:"123456789",
-            dob:"01/05/1990",
-            rol:"Administrador",
-        },
-        {
-            name: "Jorge Eliecer Gaitan",
-            email:"jgaitan19925@universidadean.edu.co",
-            password:"profe456",
-            cedula:"987654321",
-            dob:"12/12/1912",
-            rol:"Profesor",
-        },
-    ]
-
-    
-
     const handleLogin = async (e) => {
         e.preventDefault();
 
-        const usuario = usuarios.find((u) => u.email === email);
-
-        if (!usuario) {
-            setError("Correo inválido o no existente");
-            setInputError({ email: true, contrasena: false });
+        if (!email.endsWith('@universidadean.edu.co')) {
+            setError('El correo debe finalizar en @universidadean.edu.co');
+            setInputError({email:true, password:true});
             return;
-        } else{
-            setError("");
-            setInputError({ email: false, contrasena: false });
-            localStorage.setItem("usuarioLogueado", JSON.stringify(usuario));
-            navigate("/pruebas/home");
         }
 
+        try {
+            const res = await axios.post("http://localhost:8000/login/", {
+                email,
+                password,
+            });
 
-        if (usuario.password !== password) {
-            setError("Contraseña incorrecta");
-            setInputError({ email: false, contrasena: true });
-            return;
-        } else {
-            setError("");
-            setInputError({ email: false, contrasena: false });
-            localStorage.setItem("usuarioLogueado", JSON.stringify(usuario));
-            navigate("/pruebas/home");
+            localStorage.setItem('usuarioLogueado', JSON.stringify(res.data));
+            setError('');
+            setInputError({email:false, password:false});
+            navigate("/pruebas");
             
+        } catch (error) {
+            console.error("Error al iniciar sesión", error);
+            setError("Correo o contraseña incorrectos");
+            setInputError({email:true, password:true})
         }
-
-
     }
 
     return (

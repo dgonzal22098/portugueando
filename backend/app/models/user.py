@@ -1,5 +1,12 @@
-from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String, Date, Enum
 from ..database import Base
+import enum
+
+
+class RolUsuario(enum.Enum):
+    Estudiante = "Estudiante"
+    Profesor = "Profesor"
+    Administrador = "Administrador"
 
 
 class User(Base):
@@ -11,3 +18,4 @@ class User(Base):
     dob = Column(Date)  # Fecha de nacimiento
     hashed_password = Column(String(100))  # Mantener por seguridad
     is_active = Column(Boolean, default=True)
+    rol = Column(Enum(RolUsuario), nullable=False)  # Rol del usuario: Estudiante, Profesor o Administrador

@@ -33,7 +33,7 @@ const Login = () => {
             localStorage.setItem('usuarioLogueado', JSON.stringify(res.data));
             setError('');
             setInputError({email:false, password:false});
-            navigate("/pruebas");
+            navigate("/pruebas/home");
             
         } catch (error) {
             console.error("Error al iniciar sesión", error);

@@ -17,6 +17,9 @@ RUN if [ ! -f src/assets/logos/logoUEANblanco.png ]; then \
 RUN npm run build
 RUN npm install socket.io-client
 RUN npm install @tanstack/react-query
+RUN npm install framer-motion
+
+RUN npm audit fix
 
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html

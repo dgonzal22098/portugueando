@@ -43,5 +43,6 @@ def login(form_data: schemas.UserLogin, db: Session = Depends(get_db)):
         "id": user.id,
         "username": user.username,
         "email": user.email,
-        "is_active": user.is_active
+        "is_active": user.is_active,
+        "rol": user.rol
     }

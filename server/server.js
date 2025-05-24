@@ -14,7 +14,7 @@ const METABASE_SECRET_KEY = "d97dd1c77980a6109a01efa565fdeda607a86c26333d03dcae2
 
 app.get("/metabase-url", (req, res) => {
     const payload = {
-        resource: { question: 72 }, // ID de la pregunta o dashboard
+        resource: { dashboard: 34 }, // ID de la pregunta o dashboard
         params: {}, // filtros si los tienes
         exp: Math.round(Date.now() / 1000) + (10 * 60) // expira en 10 minutos
     };

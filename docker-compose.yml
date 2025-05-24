@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  db_portegueando:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: MOROSda2
+      MYSQL_DATABASE: usuarios
+      MYSQL_USER: dani
+      MYSQL_PASSWORD: 1234
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  backend_portu:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/code
+    command: uvicorn app.main:app --host 0.0.0.0 --reload
+
+    environment:
+      - DATABASE_URL=mysql+pymysql://dani:1234@db_portegueando:3306/usuarios
+      - SECRET_KEY=e8f2a9b1c7d6508a4f3e2d1b7c9a6f0d5e3b2a8c7f6d5e0b9a8c7f6d5e4b3a2c1
+    depends_on:
+      - db_portegueando
+    networks:
+      - app-network
+
+  frontend_puto:
+    build:
+      context: .
+      dockerfile: dockerfile
+    ports:
+      - "5173:5173"  # Ajusta los puertos según tu configuración
+    volumes:
+      - ./src:/app/src  # Para desarrollo en tiempo real
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - db_portegueando
+    # Asegúrate de que este comando mantenga el contenedor activo
+    command: npm run dev -- --host 0.0.0.0
+
+  metabase:
+    image: cristhian999/proyecto_de_grado:metabase
+    ports:
+      - "3000:3000"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    depends_on:
+      - db_portegueando
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql_data:

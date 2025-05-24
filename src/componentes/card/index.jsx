@@ -1,6 +1,7 @@
 import styled from "styled-components"
 import logoBlanco from "../../assets/logos/logoUEANblanco.png"
 import logoPortugueando from "../../assets/logos/logoPortugueando.png"
+import {device} from "../../Breakpoints/breakpoints.js"
 
 
 const Card = ({title, children}) => {
@@ -31,6 +32,11 @@ const CardTemplate = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
+    
+    @media ${device.mobile} {
+        width: 100%;
+        margin: 0 1rem;
+    }
 `
 const CardHeader = styled.div`
     padding: 12px;

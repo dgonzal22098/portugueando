@@ -2,6 +2,9 @@ import {styled} from "styled-components";
 import PhotoUser from "../../../assets/pictures/userNone.png";
 import ProfilePictureModal  from "../ProfilePictureModal";
 import {useState} from "react";
+import {device} from "../../../Breakpoints/breakpoints"
+import useMediaQuery from "../../../hooks/useMediaQuery.js";
+import Button from "../../../componentes/Button";
 
 // Componente de Imagen de perfil
 // Rol: Todos
@@ -11,37 +14,76 @@ import {useState} from "react";
 const ProfilePicture = () => {
 
     const [showProfileModal, setShowProfileModal] = useState(false);
+    const isTablet = useMediaQuery("(max-width: 768px)");
 
-    return <ImageContainer>
 
-        <img src={PhotoUser} alt="Usuario" onClick={() => setShowProfileModal(true)} />
+    return (
 
-        <Overlay className="overlay">
-            <label htmlFor="uploadInput">Subir imagen</label>
-            <button onClick={() => setShowProfileModal(true)}>Ver imagen</button>
-            <input
-                type="file"
-                id="uploadInput"
-                accept="image/*"
-                onChange=""
-                hidden
+        <ImageContainer>
+
+            <img
+                src={PhotoUser}
+                alt="Usuario"
+                onClick={() => {
+                    if (isTablet) setShowProfileModal(true);
+                }}
             />
-        </Overlay>
 
-        {showProfileModal && <ProfilePictureModal setShowPictureModal={setShowProfileModal} />}
+            {!isTablet ? (
+                <Overlay className="overlay">
+                    <label htmlFor="uploadInput">Subir imagen</label>
+                    <button onClick={() => setShowProfileModal(true)}>Ver imagen</button>
+                    <input type="file" id="uploadInput" accept="image/*" hidden />
+                </Overlay>
+            ) : (
+                    <ButtonGroup>
+                        <Button
+                            type="button"
+                            texto="Ver imagen"
+                            onClick={() => setShowProfileModal(true)}
+                        />
+                        <StyledButton>
+                            <label htmlFor="uploadInput">
+                                Cambiar foto
+                            </label>
+                            <input
+                                id="uploadInput"
+                                type="file"
+                                accept="image/*"
+                                style={{display: "none"}}
+                                onChange=""
+                            />
+                        </StyledButton>
 
-    </ImageContainer>
+                    </ButtonGroup>
+                )
+            }
+
+            {showProfileModal && <ProfilePictureModal setShowPictureModal={setShowProfileModal} />}
+
+        </ImageContainer>)
 }
 
 export default ProfilePicture
 
+
 const ImageContainer = styled.div`
-  width: 30%;
+    width: 450px;
     background-color: white;
-  border-radius: 10px;
-  overflow: hidden;
-  cursor: pointer;
-  border: 1px solid #ccc;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 1px solid #ccc;
+
+    @media ${device.tablet} {
+        display: flex;
+        gap: 2rem;
+        width: 100%;
+        height: 20%;
+        padding: 3rem;
+        align-items: center;
+        justify-content: space-between;
+    }
   
 
   img {
@@ -50,6 +92,13 @@ const ImageContainer = styled.div`
     object-fit: cover;
     border-radius: 50%;
     transition: 0.3s ease;
+      @media ${device.tablet} {
+          width: 50%;
+          height: 200%;
+      }
+      @media ${device.mobile} {
+          width: 30%;
+      }
   }
 
   &:hover .overlay {
@@ -79,8 +128,39 @@ const Overlay = styled.div`
     border-radius: 5px;
     text-align: center;
   }
-
+    
   label:hover, button:hover {
     background: rgba(255, 255, 255, 0.4);
   }
+`;
+
+const ButtonGroup = styled.div`
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    width: 60%;
+    flex-direction: column;
+    padding: 2rem;
+    
+    @media ${device.mobile} {
+        padding: 0;
+    }
+`;
+
+
+const StyledButton = styled.button`
+    width: 100%;
+    border-radius: 8px;
+    border: 1px grey solid;
+    color: black;
+    font-weight: 500;
+    height: 45px;
+    font-size: 1rem;
+    transition: .1s ease-in-out;
+    padding: 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
 `;

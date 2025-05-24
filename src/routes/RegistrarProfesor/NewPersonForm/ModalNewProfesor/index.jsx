@@ -1,6 +1,7 @@
 
 import styled from "styled-components";
 import { IoClose } from "react-icons/io5";
+import {device} from "../../../../Breakpoints/breakpoints.js";
 
 // Modal de confirmacion de nuevo docente
 // Rol: Administrador
@@ -73,6 +74,11 @@ const Modal = styled.div`
     width: 600px;
     max-height: 90vh;
     overflow-y: auto;
+    
+    @media ${device.mobile} {
+        margin: 0 1rem;
+        padding: 1rem;
+    }
 
     .myFile{
         font-family: inherit;

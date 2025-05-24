@@ -7,6 +7,7 @@ import { IoIosReturnLeft } from "react-icons/io";
 import UploadFile from "./ModalUpload";
 import ShowRegistrationForm from './StudentRegistrationForm'
 import ListaEjemplo from "./ListaEjemplo";
+import {device} from "../../../../Breakpoints/breakpoints";
 
 // Modulo dentro del grupo seleccionado
 // Rol: Profesor
@@ -24,7 +25,7 @@ const GruposDocentesNivel = () => {
   const [listaEstudiantesEjemplo, setListaEstudiantesEjemplo] = useState(false);
 
   const regresarButton = () => {
-    navigate("/pruebas/grupos_docente"); 
+    navigate("/main/cursos");
   }
 
 
@@ -104,6 +105,12 @@ const Container = styled.div`
     justify-content: space-evenly;
     height: 100vh;
     overflow: auto;
+  @media ${device.mobile} {
+    width: 100%;
+    padding: 1rem;
+    align-items: center;
+    justify-content: flex-start;
+  }
     &::-webkit-scrollbar {
         display: none;
     }
@@ -111,12 +118,22 @@ const Container = styled.div`
 const Titulo = styled.h1`
   font-size: 3rem;
   margin-bottom: 2rem;
+  
+  @media ${device.mobile} {
+    font-size: 1.7rem;
+    text-align: center;
+  }
 `
 const CardContainer = styled.div`
   width: 70%;
   display: grid;
   grid-template-columns: 1fr;
   grid-gap: 2rem;
+  
+  @media ${device.mobile} {
+    width: 100%;
+    
+  }
 `
 const GrupoContainer = styled.div`
   width: 100%;
@@ -146,6 +163,10 @@ const StatusCont = styled.div`
   border: 1px #d9d9d9 solid;
   border-radius: 15px;
   text-align: center;
+  
+  @media ${device.mobile} {
+    width: 100px;
+  }
 `
 const ButtonCont = styled.div`
   display: flex;
@@ -153,6 +174,10 @@ const ButtonCont = styled.div`
   width: 100%;
   align-items: center;
   gap: 10px;
+  @media ${device.mobile} {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 `
 const Button = styled.button`
   width: 50%;
@@ -163,6 +188,10 @@ const Button = styled.button`
   padding: 1rem;
   border: none;
   transition: .2s ease-in-out;
+  
+  @media ${device.mobile} {
+    width: 80%;
+  }
   &:hover{
     background-color: #53c76a;
     cursor: pointer;

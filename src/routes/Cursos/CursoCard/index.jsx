@@ -1,4 +1,5 @@
 import styled from "styled-components"
+import {useOutletContext} from "react-router-dom";
 
 // Plantilla de cursos que han sido creados por el administrador
 // Rol: Administrador
@@ -6,6 +7,19 @@ import styled from "styled-components"
 
 const CursoCard = ({value, toGroups, setShowCrearGrupoModal}) => {
 
+    const {usuario} = useOutletContext();
+
+    const getRole = () => {
+        if(usuario.rol === "Administrador") {
+            return "Administrador";
+        } else if(usuario.rol === "Profesor") {
+            return "Profesor";
+        } else if(usuario.rol === "Estudiante") {
+            return "Estudiante";
+        }
+    }
+
+    const role = getRole();
 
     return (
     <Container>
@@ -17,10 +31,15 @@ const CursoCard = ({value, toGroups, setShowCrearGrupoModal}) => {
             <p>Grupos inactivos: 1</p>
         </InfoCont>
 
-        <ButtonGroup>
-            <ButtonCurso onClick={toGroups}>Ver grupos</ButtonCurso>
-            <ButtonCurso onClick={setShowCrearGrupoModal}>Crear grupo</ButtonCurso>
-        </ButtonGroup>
+        {role === "Profesor" ? (
+            <ButtonGroup>
+                <ButtonCurso onClick={toGroups}>Ver grupos</ButtonCurso>
+                <ButtonCurso onClick={setShowCrearGrupoModal}>Crear grupo</ButtonCurso>
+            </ButtonGroup>) : (
+            <ButtonGroup>
+                <ButtonCurso onClick={toGroups}>Ver grupos</ButtonCurso>
+            </ButtonGroup>
+        )}
 
     </Container>)
 }

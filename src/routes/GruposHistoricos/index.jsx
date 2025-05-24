@@ -2,6 +2,7 @@ import { useState } from "react"
 import styled from "styled-components"
 import { useNavigate } from "react-router-dom";
 import ListadoHistoricEstudiantes from "./HistoricStudents";
+import {device} from "../../Breakpoints/breakpoints.js";
 
 // Modulo de grupos históricos
 // Rol: Administrador
@@ -13,7 +14,7 @@ const GruposHistoricos = () => {
     const [showHistoricStudents, setShowHistoricStudents] = useState(false);
 
     const regresarOption = () => {
-        navigate("/pruebas/grupos");
+        navigate("/main/grupos");
     }
 
     return (
@@ -47,9 +48,14 @@ const Container = styled.div`
     width: 75%;
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly;
+    justify-content: flex-start;
     height: 100vh;
     overflow: auto;
+    @media ${device.mobile} {
+        width: 100%;
+        padding: 1rem;
+        align-items: center;
+    }
     &::-webkit-scrollbar {
         display: none;
     }
@@ -61,6 +67,13 @@ const Titulo = styled.h1`
   justify-content: space-between;
   width: 85%;
   align-items: center;
+    
+    @media ${device.mobile} {
+        font-size: 2rem;
+        flex-direction: column-reverse;
+        align-items: center;
+        gap: 1rem;
+    }
 `
 const GroupContainer = styled.div`
   width: 85%;

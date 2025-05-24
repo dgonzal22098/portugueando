@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styled from "styled-components"
 import NuevoItem from "./AddTitle";
+import {device} from "../../../Breakpoints/breakpoints"
 
 // Modulo de coleccion seleccionada
 // Rol: Estudiante, Profesor
@@ -26,7 +27,7 @@ const ContentColection = ({selectedColection, setShowColection, setShowColection
 
         <Row className="encabezado">
             <h3>Recurso para fortalecer competencias</h3>
-            <h3>Fecha de creación</h3>
+            <h3 className="right">Fecha de creación</h3>
         </Row>
 
         {selectedColection.contenidos.map((item, index) => (
@@ -58,6 +59,7 @@ const ContentColection = ({selectedColection, setShowColection, setShowColection
 
 export default ContentColection
 
+
 const Container = styled.div`
     margin: 2rem 0;
     padding: 3rem 1rem;
@@ -69,6 +71,9 @@ const Container = styled.div`
     flex-direction: column;
     border: 1px #d9d9d9 solid;
     border-radius: 6px;
+    @media ${device.tablet} {
+        width: 100%;
+    }
     `
 const Row = styled.div`
   display: flex;
@@ -81,12 +86,18 @@ const Row = styled.div`
   width: 90%;
   &.encabezado{
     margin-bottom: 2.5rem;
+      .right{
+          text-align: right;
+      }
   }
 `;
 const Titulo = styled.div`
   width: 70%;
   font-weight: bold;
   transition: .2s ease-in-out;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   &:hover{
       text-decoration: underline;
       cursor: pointer;
@@ -120,6 +131,10 @@ const ButtonCont = styled.div`
   width: 90%;
   align-items: center;
   gap: 10px;
+    
+  @media ${device.mobile} {
+      flex-direction: column;
+  }  
 `
 const Button = styled.button`
   width: 50%;
@@ -131,6 +146,10 @@ const Button = styled.button`
   padding: 1rem;
   border: none;
   transition: .2s ease-in-out;
+    
+  @media ${device.mobile} {
+      width: 100%;
+  }  
   &:hover{
     background-color: #53c76a;
     cursor: pointer;

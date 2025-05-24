@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { IoClose } from "react-icons/io5";
 import { useState } from "react";
+import {device} from "../../../Breakpoints/breakpoints.js";
 
 // Modal de crear un nuevo grupo en un curso
 // Rol: Administrador
@@ -34,8 +35,7 @@ const CrearGrupoModal = ({ setShowCrearGrupoModal }) => {
 
         <h2 style={{margin:"2rem 2rem 0 0"}}>Nuevo grupo</h2>
         
-        {/* el numero del grupo se debe calcular al contar los grupos que ya hayan sido creados con anterioridad y de ese modo se podra seleccionar el disponible */
-        }
+        {/* el numero del grupo se debe calcular al contar los grupos que ya hayan sido creados con anterioridad y de ese modo se podra seleccionar el disponible */}
         
         {showConfirmation ? 
         <Confirmation>
@@ -126,6 +126,9 @@ const Modal = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  @media ${device.mobile} {
+      margin: 0 1rem;
+  }  
   &::-webkit-scrollbar {
       display: none;
   }

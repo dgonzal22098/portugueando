@@ -1,11 +1,13 @@
 import styled from "styled-components"
-import { useNavigate } from "react-router-dom";
+import {useNavigate, useOutletContext} from "react-router-dom";
 import { FaHistory } from "react-icons/fa";
 import { IoMdAdd } from "react-icons/io";
 import { useState } from "react";
 import ListadoEstudiantes from "../ListadoEstudiantes";
 import Inhabilitar from "../Inhabilitar";
 import CrearGrupoModal from "../../Cursos/CrearGrupoModal";
+import {device} from "../../../Breakpoints/breakpoints.js";
+
 
 
 // Modulo interior dentro de la opcion "Ver grupos" en la ruta de /cursos que solo pertenece al administrador.
@@ -21,13 +23,29 @@ const Grupos = () => {
   const [showInhabilitar, setShowInhabilitar] = useState(false);
   const [showCrearGrupo, setShowCrearGrupo] = useState(false);
 
+  const {usuario} = useOutletContext();
+
+  const getRole = (usuario) => {
+    if(usuario.rol === "administrador") {
+      return "Administrador";
+    } else if(usuario.rol === "profesor") {
+      return "Profesor";
+    } else if(usuario.rol === "estudiante") {
+      return "Estudiante";
+    }
+  }
+
+  const role = getRole(usuario);
+
+  console.log(role);
+
 
   const regresarOption = () => {
-    navigate("/pruebas/cursos");
+    navigate("/main/cursos");
   }
 
   const iraHistorial = () => {
-    navigate("/pruebas/grupos_historicos");
+    navigate("/main/grupos_historicos");
   }
 
   return (
@@ -51,10 +69,18 @@ const Grupos = () => {
       </GroupContainer>
     ))}
 
-    <GroupContainer className="additionalButtons">
-      <Buttons className="agregarButton" onClick={() => setShowCrearGrupo(true)}>Crear grupo<IoMdAdd /></Buttons>
-      <Buttons className="agregarButton" onClick={iraHistorial}>Historial de grupos<FaHistory /></Buttons>
-    </GroupContainer>
+
+    {role === "Profesor" ? (
+      <GroupContainer className="additionalButtons">
+        <Buttons className="agregarButton" onClick={() => setShowCrearGrupo(true)}>Crear grupo<IoMdAdd /></Buttons>
+        <Buttons className="agregarButton" onClick={iraHistorial}>Historial de grupos<FaHistory /></Buttons>
+      </GroupContainer>
+    ) : (
+        <GroupContainer className="additionalButtons">
+          <Buttons className="agregarButton" onClick={iraHistorial}>Historial de grupos<FaHistory /></Buttons>
+        </GroupContainer>
+
+    )}
 
     {showEstudiantes && <ListadoEstudiantes setShowEstudiantes={setShowEstudiantes}/>}
     {showInhabilitar && <Inhabilitar setShowInhabilitar={setShowInhabilitar}/>}
@@ -112,6 +138,10 @@ const Container = styled.div`
     justify-content: space-evenly;
     height: 100vh;
     overflow: auto;
+  @media ${device.mobile} {
+    width: 100%;
+    padding: 1rem;
+  }
     &::-webkit-scrollbar {
         display: none;
     }
@@ -123,6 +153,14 @@ const Titulo = styled.h1`
   justify-content: space-between;
   width: 100%;
   align-items: center;
+  
+  @media ${device.mobile} {
+    font-size: 2rem;
+    text-align: center;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 1rem;
+  }
 `
 const GroupContainer = styled.div`
   width: 100%;
@@ -188,6 +226,9 @@ const Buttons = styled.button`
     align-items: center;
     &:hover{
       background-color: #eae8e8;
+    }
+    @media ${device.mobile} {
+      width: 100%;
     }
   }
 `

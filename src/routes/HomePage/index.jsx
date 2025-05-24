@@ -3,6 +3,7 @@ import { useOutletContext } from "react-router-dom"
 import InformativeCards from "./InformativeCards";
 import Header from "./Header";
 import Bienvenida from "./Bienvenida";
+import {device} from "../../Breakpoints/breakpoints"
 
 // Main de Home page
 // Rol: Todos
@@ -71,56 +72,56 @@ const cardsContentProfesor = [
     {
         frontText: "📊 Registro muy fácil de estudiantes",
         backText: "Visualiza gráficos detallados por estudiante, grupo o nivel, con información acumulada y tendencias de errores más comunes.",
-        link:"/pruebas/reportes",
+        link:"/main/reportes",
     },
     {
         frontText: "📝 Clasificación automática de errores",
         backText: "Registra y categoriza automáticamente errores ortográficos, gramaticales y de acentuación en las evaluaciones escritas.",
-        link:"/pruebas/reportes",
+        link:"/main/reportes",
     },
     {
         frontText: "📂 Registro muy fácil de estudiantes",
         backText: "Registra a tus estudiantes en el grupo correspondiente a través de una plantilla Excel o de forma manual.",
-        link: "/pruebas/grupos_docente"
+        link: "/main/grupos_docente"
     },
     {
         frontText: "💡 Retroalimentación estratégica",
         backText: "Genera sugerencias pedagógicas basadas en el análisis de errores frecuentes para reforzar áreas críticas.",
-        link: "/pruebas/material_apoyo",
+        link: "/main/material_apoyo",
     },
 ];
 const cardsContentEstudiante = [
     {
         frontText: "📈 Acceso a informes de retroalimentación (Reportes)",
         backText: "Consulta tus reportes de evaluación en tiempo real, con errores clasificados y recomendaciones personalizadas.",
-        link: "/pruebas/reportes",
+        link: "/main/reportes",
     },
     {
         frontText: "🔍 Seguimiento del progreso (Dashboard)",
         backText: "Revisa tu evolución académica a lo largo del semestre y detecta patrones de mejora o retroceso. Puedes ingresar tus caraterizaciones de aprendizaje.",
-        link: "/pruebas/dashboard",
+        link: "/main/dashboard",
     },
     {
         frontText: "💬 Colecciones de material de apoyo (Material de Apoyo)",
         backText: "Visualiza materiales de retroalimentación que servirán para tu crecimiento académico, accede a cada uno de ellos a través de materiales de apoyo personalizados.",
-        link: "/pruebas/material_apoyo",
+        link: "/main/material_apoyo",
     },
     {
         frontText: "🗃️ Historial de desempeño académico",
         backText: "Consulta tu historial completo de retroalimentaciones y errores corregidos desde niveles anteriores.",
-        link: "/pruebas/home",
+        link: "/main/home",
     },
 ];
 const cardsContentAdmin = [
     {
         frontText: "🔐 Gestión de docentes",
         backText: "Crea, edita y asigna permisos a docentes y administradores para garantizar un acceso seguro.",
-        link: "/pruebas/registro_profesor",
+        link: "/main/registro_profesor",
     },
     {
         frontText: "⚙️ Configuración de los cursos, grupos y monitoreo",
         backText: "Crea, edita y gestiona tanto grupos como cursos para garantizar un acceso seguro.",
-        link: "/pruebas/cursos",
+        link: "/main/cursos",
     },
 ];
 
@@ -133,8 +134,12 @@ const ContentContainer = styled.div`
     flex-direction: column;
     gap: 1rem;
     align-items:center;
+    
+    @media ${device.tablet} {
+        margin: 0;
+    }
     .headerContainer{
-        height: 600px;
+        height: 100%;
     }
     .flipContainer{
         width: 100%;
@@ -143,11 +148,16 @@ const ContentContainer = styled.div`
         gap: 1rem;
         align-content: center;
         justify-content: center;
+        
+        
         .left{
             width: 100%;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 2rem;
+            @media ${device.mobile} {
+                grid-template-columns: 1fr;
+            }
         }
         .left p{
             width: 100%;
@@ -160,6 +170,19 @@ const ContentContainer = styled.div`
             justify-content: center;
             gap: 2rem;
             margin: 0 3rem;
+            
+            @media ${device.tablet} {
+                text-align: center;
+            }
+            
+            
+        }
+        
+        @media ${device.tablet} {
+            flex-direction: column-reverse;
+            width: 80%;
+            gap: 2rem;
+            
         }
     }
 

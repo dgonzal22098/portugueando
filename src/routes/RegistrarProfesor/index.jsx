@@ -4,6 +4,7 @@ import { useOutletContext } from "react-router-dom"
 import InformativeCard from "./InformativeCard";
 import BotonAgregar from "./BotonAgregar";
 import NewPersonForm from "./NewPersonForm";
+import {device} from "../../Breakpoints/breakpoints.js"
 
 // Main de Registro de nuevo profesor
 // Rol: Administrador
@@ -14,14 +15,12 @@ import NewPersonForm from "./NewPersonForm";
 const RegistrarProfesor = () => {
   const {usuario} = useOutletContext();
   const [showProfesorFormulario, setMostrarFormulario] = useState(false);
-  
+
     
   return(
   <Container>
 
-      <h1 style={{fontSize: "3rem", marginBottom:"2rem"}}>
-        Registro de nuevo profesor
-      </h1>
+      <h1>Registro de nuevo profesor</h1>
 
       <h2 style={{marginBottom:"2rem"}}>Docentes actualmente registrados</h2>
 
@@ -46,6 +45,29 @@ const Container = styled.div`
     justify-content: space-evenly;
     height: 100vh;
     overflow: auto;
+    
+    @media ${device.mobile} {
+        width: 100%;
+        padding: 1rem;
+    }
+    
+    h2{
+        @media ${device.mobile} {
+            font-size: 1.5rem;
+            text-align: center;
+        }
+    }
+    
+    h1{
+        font-size: 3rem;
+        margin-bottom: 2rem;
+        
+        @media ${device.mobile} {
+            font-size: 2rem;
+            text-align: center;
+        }
+    }
+    
     &::-webkit-scrollbar {
         display: none;
     }

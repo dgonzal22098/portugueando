@@ -1,33 +1,41 @@
 import styled from "styled-components"
-import SamplePicture from '../../../assets/logos/sampleImg.png'
 import Chip from '@mui/material/Chip';
 import { Stack } from "@mui/material";
+import {device} from "../../../Breakpoints/breakpoints"
+import useMediaQuery from "../../../hooks/useMediaQuery.js"
 
 // Plantilla de Colecciones
 // Rol: Profesor , Estudiantes
 // Logica: Esta plantilla utiliza los datos de las colecciones que el profesor ha creado en cierto nivel y le permite a la plantilla mostrarlos, no hay logica necesaria en este modulo ya que solo es plantilla.
 
 const ColectionCard = ({titulo, etiquetas, onAcceder, picture}) => {
-  
+
+    const isMobile = useMediaQuery(device.mobile);
+
     return (
         <Container>
             <Imagen src={picture}/>
             <div style={{width:"55%"}}>
                 <h2>{titulo}</h2>
 
-                <Stack 
-                direction="row" 
-                spacing={1} 
+                {!isMobile ? (
+
+                <Stack
+                direction="row"
+                spacing={1}
                 flexWrap="wrap"
                 sx={{mb: 2}}>
                 {etiquetas.map((etiqueta, index) => (
-                    <Chip 
-                    key={index} 
-                    label={etiqueta} 
-                    color="primary" 
+                    <Chip
+                    key={index}
+                    label={etiqueta}
+                    color="primary"
                     variant="outlined" />
                 ))}
                 </Stack>
+                ) : (
+                    <></>
+                )}
 
                 <Button 
                 onClick={onAcceder} >Acceder</Button>

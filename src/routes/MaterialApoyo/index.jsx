@@ -2,13 +2,12 @@ import styled from "styled-components"
 import { TextField } from "@mui/material"
 import { CiSearch } from "react-icons/ci";
 import { useState } from "react";
-import { IoMdAdd } from "react-icons/io";
 import { useOutletContext } from "react-router-dom";
-import SamplePictureLogo from '../../assets/logos/imagenIconSample.webp'
 import SamplePicture from '../../assets/logos/sampleImg.png'
 import ContentColection from './ContentColection';
 import ColectionCard from "./ColectionCard";
 import NuevaColeccion from "./NuevaColeccion/index.jsx";
+import {device} from "../../Breakpoints/breakpoints"
 
 // Modulo de las colecciones disponibles
 // Rol: Profesor, Estudiante
@@ -24,10 +23,11 @@ const MaterialApoyo = () => {
     const [colectionName, setColectionName] = useState("");
 
 
+
     return (
     <Container>
 
-        <h1 style={{fontSize: "3rem", marginBottom:"2rem"}}>Material de apoyo - colecciones</h1>
+        <MainTitle>Material de apoyo - colecciones</MainTitle>
 
         <SearchContainer>
             <TextField id="outlined-basic" label="Buscar aqui..." variant="outlined" style={SearchBoxStyle} sx={{borderRadius:"5px"}}>
@@ -106,18 +106,34 @@ const SearchBoxStyle = {
     backgroundColor: "white",
     width: "90%",
 }
+
+const MainTitle = styled.h1`
+    font-size: 3rem;
+    margin-bottom: 2rem;
+    @media ${device.tablet} {
+        font-size: 1.3rem;
+    }
+`
 const Container = styled.div`
     padding: 2.5rem;
-    width: 70%;
+    width: 80%;
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
     height: 100vh;
     overflow: auto;
+    
+    @media ${device.tablet} {
+        padding: 1rem;
+    }
+    @media ${device.mobile} {
+        width: 100%;
+    }
+    
     &::-webkit-scrollbar {
         display: none;
     }
-    `
+`
 const SearchContainer = styled.div`
     display: flex;
     gap: 15px;
@@ -132,11 +148,14 @@ const SearchContainer = styled.div`
     }
 `
 const ColectionContainer = styled.div`
-    width: 90%;
+    width: 100%;
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-gap: 1rem;
     padding: 2rem 0;
+    @media ${device.tablet} {
+        grid-template-columns: 1fr;
+    }
 `
 const ContainerNew = styled.div`
 

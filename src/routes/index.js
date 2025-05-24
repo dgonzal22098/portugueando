@@ -7,8 +7,8 @@ export { default as Login } from './Login';
 // Exporta el componente NewPassword desde './NewPassword'
 export { default as NewPassword } from './NewPassword';
 
-// Exporta el componente Pruebas desde './Pruebas'
-export { default as Pruebas } from './Pruebas';
+// Exporta el componente Main desde './main'
+export { default as Main } from './Main';
 
 // Exporta el componente Recover (recuperación de contraseña) desde './Recover'
 export { default as Recover } from './Recover';

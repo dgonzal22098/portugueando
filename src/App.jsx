@@ -1,5 +1,5 @@
 import { BrowserRouter,Routes,Route } from 'react-router-dom'
-import {NewPassword, Recover, Pruebas, Login, Dashboard, Profile, Reportes, Grupos, Cursos, GruposHistoricos, GruposDocente, GruposDocentesNivel, MaterialApoyo, RegistrarProfesor, HomePage} from './routes'
+import {NewPassword, Recover, Main, Login, Dashboard, Profile, Reportes, Grupos, Cursos, GruposHistoricos, GruposDocente, GruposDocentesNivel, MaterialApoyo, RegistrarProfesor, HomePage} from './routes'
 import ProtectedRoute from "./routes/ProtectedRoute";
 
 
@@ -15,10 +15,10 @@ function App() {
 
           {/* Rutas privadas */}
 
-          <Route path="/pruebas"
+          <Route path="/main"
                  element={
                 <ProtectedRoute>
-                    <Pruebas />
+                    <Main />
                 </ProtectedRoute>}
           >
             <Route path="home" element={<HomePage />} />

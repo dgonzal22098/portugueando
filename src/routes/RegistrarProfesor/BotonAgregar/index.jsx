@@ -1,5 +1,6 @@
 import styled from "styled-components"
 import { IoAddOutline as AddIC} from "react-icons/io5";
+import {device} from "../../../Breakpoints/breakpoints.js"
 
 // Boton que muestra el formulario, no se necesita logica aca.
 
@@ -30,6 +31,12 @@ const Boton = styled.button`
   align-items: center;
   margin: 2.5rem;
   text-decoration: none;
+  
+  @media ${device.mobile}{
+    width: 100%;
+    padding: 1rem;
+    margin: 1rem 0;
+  }
   
   span {
     width: 100%;

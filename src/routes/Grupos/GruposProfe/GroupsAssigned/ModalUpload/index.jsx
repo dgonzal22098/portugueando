@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { IoClose } from "react-icons/io5";
 import { useState } from "react";
+import {device} from "../../../../../Breakpoints/breakpoints.js";
 
 // Modal de subir archivo excel (lista de nuevos estudiantes)
 // Rol: Profesor
@@ -82,6 +83,10 @@ const Modal = styled.div`
     border-radius: 1rem;
     text-align: center;
     width: fit-content;
+    @media ${device.mobile} {
+        margin: 0 1rem;
+        width: 380px;
+    }
     .myFile{
         font-family: inherit;
         font-size:1rem;

@@ -13,6 +13,7 @@ import { PiFoldersFill as CursosIC} from "react-icons/pi";
 import LogoPortugueando from '../../assets/logos/logoPortugueandoBlanco.png'
 import LogoutComp from "../LogoutComp";
 import Tooltip from '@mui/material/Tooltip';
+import ReactDOM from 'react-dom';
 
 
 const LateralMenu = ({isOpen, showSideBar,data}) => {
@@ -38,11 +39,11 @@ const LateralMenu = ({isOpen, showSideBar,data}) => {
         {
           const isActiveManually =
             (label === "Cursos y grupos" &&
-            (location.pathname.includes("/pruebas/grupos") ||
-            location.pathname.includes("/pruebas/cursos")))||
+            (location.pathname.includes("/main/grupos") ||
+            location.pathname.includes("/main/cursos")))||
             (label === "Grupos y estudiantes" &&
-            (location.pathname.includes("/pruebas/grupos_docente") ||
-            location.pathname.includes("/pruebas/groups_assigned_docente")));
+            (location.pathname.includes("/main/grupos_docente") ||
+            location.pathname.includes("/main/groups_assigned_docente")));
 
           return (
 
@@ -76,7 +77,12 @@ const LateralMenu = ({isOpen, showSideBar,data}) => {
           </div>
         </LogoutOption>
       </nav>
-      {showModal && <LogoutComp setShowModal={setShowModal}/>}
+
+      {showModal && ReactDOM.createPortal(
+          <LogoutComp setShowModal={setShowModal} />,
+          document.body)
+      }
+
     </Container>
   );
 }
@@ -107,7 +113,7 @@ const profesorLinks = [
   {label: "Home", icon: <HomeIcon />, to: "home",},
   {label: "Perfil", icon: <UserIC />, to: "profile",},
   {label: "Reportes", icon: <ReportesIC />, to: "reportes",},
-  {label: "Grupos y estudiantes", icon: <GroupCreationIC />, to: "grupos_docente",},
+  {label: "Cursos y grupos", icon: <GroupCreationIC />, to: "cursos",},
   {label: "Material de apoyo", icon: <CollectionIC />, to: "material_apoyo",},
 ];
 const adminLinks = [
@@ -119,7 +125,11 @@ const adminLinks = [
 const LogoutOption = styled.div`
   margin: 1rem 0;
   cursor: pointer;
+  z-index: 2000;
 
+  @media (max-width: 768px) {
+    margin: 0.5rem;
+  }
   .CloseSesion{
     display: flex;
     align-items: center;
@@ -130,6 +140,10 @@ const LogoutOption = styled.div`
     font-size: 0.8rem;
     font-weight: bold;
     transition: background-color 0.2s;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+    }
   
     &:hover {
       color: red;
@@ -139,11 +153,21 @@ const LogoutOption = styled.div`
     .LogoutIcon {
       font-size: 1rem;
       margin-right: ${({ isOpen }) => (isOpen ? "10px" : "0")};
+
+      @media (max-width: 768px) {
+        margin: 0;
+      }
     }
 
     span {
       white-space: nowrap;
       margin-left: 0.5rem;
+
+      @media (max-width: 768px) {
+        margin-left: 0;
+        margin-top: 0.2rem;
+        font-size: 0.7rem;
+      }
     }
   }
 
@@ -155,6 +179,10 @@ const LogoContainer = styled.div`
   margin-bottom: 3rem;
   overflow: hidden;
   padding-left: 0.5rem;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
 
   .Logo {
     width: 6rem;
@@ -169,9 +197,29 @@ const Container = styled.div`
   position: sticky;
   padding: 2rem 2rem ;
 
+  @media (max-width: 768px) {
+    width: 100%;
+    height: auto;
+    position: relative;
+    padding: 0.5rem 1rem;
+  }
+
   nav {
+    display: flex;
+    flex-direction: column;
+
+    @media (max-width: 768px) {
+      flex-direction: row;
+      justify-content: space-around;
+      align-items: center;
+    }
     .LinkContainer {
       margin: 1rem 0;
+
+      @media (max-width: 768px) {
+        margin: 0.5rem;
+      }
+
 
       .Link {
         display: flex;
@@ -183,6 +231,11 @@ const Container = styled.div`
         font-size: 0.8rem;
         font-weight: bold;
         transition: background-color 0.2s;
+
+        @media (max-width: 768px) {
+          flex-direction: column;
+          font-size: 0.7rem;
+        }
 
         &:hover {
           color: black;
@@ -202,10 +255,19 @@ const Container = styled.div`
         .LinkIcon {
           font-size: 1.2rem;
           margin-right: ${({ isOpen }) => (isOpen ? "10px" : "0")};
+
+          @media (max-width: 768px) {
+            margin: 0;
+          }
         }
 
         span {
           white-space: nowrap;
+
+          @media (max-width: 768px) {
+            margin-top: 0.2rem;
+            font-size: 0.7rem;
+          }
         }
       }
     }
@@ -229,6 +291,10 @@ const Container = styled.div`
     transform: ${({ isOpen }) => (isOpen ? "rotate(0)" : "rotate(180deg)")};
     transition: transform 0.3s;
     cursor: pointer;
+    
+    @media (max-width: 768px) {
+      display: none;
+    }
   }
   
 

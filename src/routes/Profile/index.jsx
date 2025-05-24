@@ -1,6 +1,7 @@
 import styled from "styled-components"
 import { useOutletContext } from "react-router-dom"
 import ProfilePicture from "./ProfilePicture";
+import {device} from "../../Breakpoints/breakpoints"
 
 // Main de Profile
 // Rol: Todos
@@ -30,6 +31,7 @@ const Profile = () => {
                 <p>Correo institucional: </p>
                 <DataModified>{usuario.email}</DataModified>
             </InformativeCard>
+
             <ProfilePicture />
 
         </div>
@@ -50,6 +52,7 @@ const Container = styled.div`
     flex-direction: column;
     justify-content: space-evenly;
     
+    
     &::-webkit-scrollbar {
     display: none;
     }
@@ -59,6 +62,13 @@ const Container = styled.div`
         justify-content: space-between;
         align-items: center;
         gap: 2rem;
+        width: 100%;
+        
+        @media ${device.tablet} {
+            flex-direction: column-reverse;
+            justify-content: flex-end;
+        }
+
         
     }
 `
@@ -67,8 +77,19 @@ const InformativeCard = styled.div`
     border: 0.5px #999999 solid;
     border-radius: 5px;
     background-color: white;
-    width: 60%;
+    width: 80%;
+    @media ${device.tablet} {
+        width: 100%;
+    }
 `
 const DataModified = styled.h3`
-    margin: 0 1rem 1rem 1rem ;
-`
+    margin: 0 1rem 1rem 1rem;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+    white-space: normal;
+    line-clamp: 3;
+    -webkit-line-clamp: 3; /* muestra hasta 3 líneas */
+    text-overflow: ellipsis;
+`;

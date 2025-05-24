@@ -1,8 +1,9 @@
 import styled from "styled-components"
 import CursoCard from "./CursoCard"
-import { useNavigate } from "react-router-dom"
-import { useState } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom"
+import { useState} from "react";
 import CrearGrupoModal from "./CrearGrupoModal";
+import {device} from "../../Breakpoints/breakpoints.js"
 
 // Main de Cursos
 // Rol: Administrador
@@ -12,9 +13,15 @@ import CrearGrupoModal from "./CrearGrupoModal";
 const Cursos = () => {
   const navigate = useNavigate();
   const [showCrearGrupoModal, setShowCrearGrupoModal] = useState(false);
+  const {usuario} = useOutletContext();
 
   const iraGrupos = () => {
-    navigate("/pruebas/grupos");
+
+    if (usuario.rol === "Profesor") {
+      navigate("/main/groups_assigned_docente");
+    } else if (usuario.rol === "Administrador"){
+      navigate("/main/grupos");
+    }
   }
 
   return (
@@ -22,10 +29,11 @@ const Cursos = () => {
 
     <Titulo>Cursos y grupos</Titulo>
 
-    <CardContainer>
+    <CardContainer >
       {titulos.map(
         (titulo, index) => (
-          <CursoCard 
+          <CursoCard
+
           key={index} 
           value={titulo} 
           toGroups={iraGrupos} 
@@ -53,6 +61,9 @@ const Container = styled.div`
     justify-content: space-evenly;
     height: 100vh;
     overflow: auto;
+    @media ${device.mobile} {
+      width: 100%;
+    }
     &::-webkit-scrollbar {
         display: none;
     }
@@ -61,11 +72,19 @@ const Container = styled.div`
 const Titulo = styled.h1`
   font-size: 3rem;
   margin-bottom: 2rem;
+  @media ${device.mobile} {
+    font-size: 2rem;
+    text-align: center;
+  }
 `
 const CardContainer = styled.div`
   width: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-gap: 3rem;
+  
+  @media ${device.mobile} {
+    grid-template-columns: 1fr;
+  }
 `
 

@@ -48,13 +48,15 @@ services:
     command: npm run dev -- --host 0.0.0.0
 
   metabase:
-    image: cristhian999/proyecto_de_grado
+    image: cristhian999/proyecto_de_grado:metabase
     ports:
       - "3000:3000"
     volumes:
       - mysql_data:/var/lib/mysql
     depends_on:
       - db_portegueando
+    networks:
+      - app-network
 
 networks:
   app-network:

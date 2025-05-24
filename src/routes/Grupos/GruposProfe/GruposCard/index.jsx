@@ -1,6 +1,7 @@
 import styled from "styled-components"
 import GrupoCard from "../CardNivel";
-import { useNavigate,Outlet } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
+import {device} from "../../../../Breakpoints/breakpoints";
 
 // Main de Grupos docente
 // Rol: Profesor
@@ -11,7 +12,7 @@ const GruposCard = () => {
   const navigate = useNavigate();
 
   const toGroupsAssigned = (nivel) => {
-    navigate("/pruebas/groups_assigned_docente", {state: {nivel}}); 
+    navigate("/main/groups_assigned_docente", {state: {nivel}});
   }
   
   return (
@@ -40,6 +41,9 @@ const Container = styled.div`
     justify-content: space-evenly;
     height: 100vh;
     overflow: auto;
+  @media ${device.mobile} {
+    width: 100%;
+  }
     &::-webkit-scrollbar {
         display: none;
     }
@@ -47,11 +51,18 @@ const Container = styled.div`
 const Titulo = styled.h1`
   font-size: 3rem;
   margin-bottom: 2rem;
+  @media ${device.mobile} {
+    font-size: 2rem;
+    text-align: center; 
+  }
 `
 const CardContainer = styled.div`
   width: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-gap: 3rem;
+  @media ${device.mobile} {
+    grid-template-columns: 1fr;
+  }
 `
 

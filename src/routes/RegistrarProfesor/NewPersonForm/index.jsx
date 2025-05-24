@@ -1,6 +1,7 @@
 import styled from "styled-components"
 import { useState } from "react"
 import ModalNewProfesor from "./ModalNewProfesor";
+import {device} from "../../../Breakpoints/breakpoints.js"
 
 // Formulario de nuevo profesor a registrar
 // Rol: Administrador
@@ -77,6 +78,10 @@ const Container = styled.div`
   border-radius: 10px;
   border: 1px grey solid;
   background-color: white;
+  
+  @media ${device.mobile}{
+    width: 100%;
+  }
 `
 const Titulo = styled.h2`
   margin: 2rem ;

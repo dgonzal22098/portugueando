@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import { IoClose } from "react-icons/io5";
 import PhotoUser from "../../../assets/pictures/userNone.png"
+import {device} from "../../../Breakpoints/breakpoints"
 
 // Modal de la foto de perfil
 // Rol: Todos
@@ -92,6 +93,7 @@ const ItemsContainer = styled.div`
     &::-webkit-scrollbar {
         display: none;   
     }
+    
 `
 const Modal = styled.div`
     position: relative;
@@ -106,6 +108,10 @@ const Modal = styled.div`
     align-items: center;
     justify-content: center;
     gap: 10px;
+    @media ${device.tablet} {
+        height: 80dvh;
+        margin: 0 1rem;
+    }
     &:hover{
         cursor: default;
     }

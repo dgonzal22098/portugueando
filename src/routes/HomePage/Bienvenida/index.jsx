@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
+import {device} from "../../../Breakpoints/breakpoints"
 
 // Componente de bienvenida
 // Rol: Todos
@@ -18,8 +19,8 @@ const Bienvenida = ({ usuario }) => {
     }, []);
 
     return (
-        <div className="bienvenida">
-            <h1 style={{textAlign:"center"}}>Bienvenido {usuario.name}!</h1>
+        <BienvenidaCont>
+            <Title>Bienvenido {usuario.name}!</Title>
 
             <ScrollingContainer>
                 <AnimatePresence mode="wait">
@@ -34,7 +35,7 @@ const Bienvenida = ({ usuario }) => {
                     </ScrollingText>
                 </AnimatePresence>
             </ScrollingContainer>
-        </div>
+        </BienvenidaCont>
     );
 };
 
@@ -46,13 +47,40 @@ const messages = [
     "Explora, aprende y participa en la comunidad de eanistas!"
 ];
 
+const BienvenidaCont = styled.div`
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin: 1rem 2rem;
+`;
+
+const Title = styled.h1`
+    text-align: center;
+    margin-top: 2rem;
+    
+    @media ${device.tablet} {
+        font-size: 2rem;
+    }
+    @media ${device.mobile} {
+        font-size: 1.5rem;
+        margin: 1rem 2rem;
+    }
+    
+`
+
 const ScrollingContainer = styled.div`
-  margin-top: 1rem;
   height: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  @media ${device.mobile} {
+      width: 80%;
+  }    
 `;
 
 const ScrollingText = styled(motion.p)`
@@ -60,4 +88,12 @@ const ScrollingText = styled(motion.p)`
   color: #333;
   text-align: center;
   white-space: nowrap;
+    
+    @media ${device.tablet} {
+        font-size: 1rem;
+    }
+    @media ${device.mobile} {
+        font-size: 0.8rem;
+    }
+
 `;

@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { useNavigate} from "react-router-dom";
 import { IoClose } from "react-icons/io5";
 import {useAuth} from "../../auth"
-
+import Backdrop from '@mui/material/Backdrop';
 
 const LogoutComp = ({setShowModal}) => {
 
@@ -16,15 +16,31 @@ const LogoutComp = ({setShowModal}) => {
         navigate("/");
         setShowModal(false);
     }
+    const handleBackdropClick = () => {
+        setShowModal(false);
+    };
+
+    const handleModalClick = (e) => {
+        e.stopPropagation(); // Evita que el click dentro del modal cierre el backdrop
+    };
 
     return (
-        <ModalBackdrop onClick={() => setShowModal(false)}>
-            <Modal onClick={(e) => e.stopPropagation()}>
+        <Backdrop
+            sx={{
+                color: '#fff',
+                zIndex: (theme) => theme.zIndex.drawer + 1,
+                backdropFilter: 'blur(3px)',
+                backgroundColor: 'rgba(0, 0, 0, 0.5)'
+            }}
+            open={true}
+            onClick={handleBackdropClick}
+        >
+            <Modal onClick={handleModalClick}>
                 
                 <CloseButton onClick={() => setShowModal(false)}>
                     <IoClose size={24} />
                 </CloseButton>
-                <h3>¿Estás seguro de que deseas cerrar sesión?</h3>
+                <h3 style={{color:"black"}}>¿Estás seguro de que deseas cerrar sesión?</h3>
 
                 <ModalButtons>
 
@@ -34,24 +50,11 @@ const LogoutComp = ({setShowModal}) => {
 
                 </ModalButtons>
             </Modal>
-        </ModalBackdrop>)
+        </Backdrop>)
 }
 
 export default  LogoutComp
 
-const ModalBackdrop = styled.div`
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    backdrop-filter: blur(3px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-    `
 const Modal = styled.div` 
     background: white;
     position: relative;
@@ -59,6 +62,7 @@ const Modal = styled.div`
     border-radius: 1rem;
     text-align: center;
     width: 300px;
+    z-index: 2000;
     `
 const ModalButtons = styled.div`
     margin-top: 1.5rem;

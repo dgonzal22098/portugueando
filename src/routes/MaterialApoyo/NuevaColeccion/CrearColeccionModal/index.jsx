@@ -2,12 +2,17 @@ import styled from "styled-components";
 import { IoClose } from "react-icons/io5";
 import { TextField } from "@mui/material";
 import { useState } from "react";
+import {device} from "../../../../Breakpoints/breakpoints"
+
+// Modal de crear una coleccion nueva
+// Rol: Profesor
+// Logica: En este modulo se debe enviar la informacion de la nueva coleccion a la base de datos.
+// Pendiente: Ajustar la logica para que permita asignar el item de la coleccion a la retroalimentacion de un estudiante en particular asi como editar la coleccion (cambiar url, tipo de item y nombre)
+// Pendiente: Agregar la logica para que permita mostrar un preview de lo que va a enviarse a la abse de datos y el mensaje de pop up que confirme la creacion exitosa.
+// Bug: al dar click al boton subir se cierra el modal. no deberia
 
 const CrearColeccionModal = ({ setShowCrearColeccion }) => {
     const [nombre, setNombre] = useState('');
-    const [imagen, setImagen] = useState(null);
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [mostrarOpcionesPostCreacion, setMostrarOpcionesPostCreacion] = useState(false);
     const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
     const [categoriasSeleccionadas, setCategoriasSeleccionadas] = useState([]);
 
@@ -20,33 +25,15 @@ const CrearColeccionModal = ({ setShowCrearColeccion }) => {
             setCategoriaSeleccionada("");
         }
     };
-
     const handleEliminarCategoria = (categoria) => {
         setCategoriasSeleccionadas(categoriasSeleccionadas.filter(cat => cat !== categoria));
     };
 
-    const handleConfirmar = () => {
-        if (!nombre || !imagen || categorias.length === 0) return;
-
-        // Aquí enviarías los datos al backend
-        setShowSuccess(true);
-        setMostrarOpcionesPostCreacion(true);
-    };
-
-    const resetearFormulario = () => {
-        setNombre('');
-        setImagen(null);
-        setCategorias([]);
-        setCategoriaInput('');
-        setShowSuccess(false);
-        setMostrarOpcionesPostCreacion(false);
-        setShowCrearColeccion(false);
-    };
 
     return (
-        <Overlay onClick={resetearFormulario}>
+        <Overlay onClick={() => setShowCrearColeccion(false)}>
             <Modal onClick={(e) => e.stopPropagation()}>
-                <CloseButton onClick={resetearFormulario}>
+                <CloseButton onClick={() => setShowCrearColeccion(false)}>
                     <IoClose size={24} />
                 </CloseButton>
 
@@ -104,22 +91,10 @@ const CrearColeccionModal = ({ setShowCrearColeccion }) => {
 
 
                 <ButtonGroup>
-                    <Button onClick={handleConfirmar}>Confirmar</Button>
-                    <Button className="cerrar" onClick={resetearFormulario}>Cancelar</Button>
+                    <Button onClick={() => setShowCrearColeccion(false)}>Confirmar</Button>
+                    <Button className="cerrar" onClick={() => setShowCrearColeccion(false)}>Cancelar</Button>
                 </ButtonGroup>
 
-                {showSuccess && (
-                    <SuccessPopup>
-                        ¡Colección creada exitosamente!
-                    </SuccessPopup>
-                )}
-
-                {mostrarOpcionesPostCreacion && (
-                    <OpcionesPost>
-                        <Button onClick={() => alert('Redirigir a añadir ítems')}>Añadir ítems</Button>
-                        <Button className="cerrar" onClick={resetearFormulario}>Omitir por ahora</Button>
-                    </OpcionesPost>
-                )}
             </Modal>
         </Overlay>
     );
@@ -273,7 +248,14 @@ const Modal = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+    @media ${device.tablet}{
+        width: 500px;
+    }
+    @media ${device.mobile}{
+        margin: 0 1rem;
+    }
     .optionsContainer{
+        padding-top: 1rem;
         width: 100%;
         height: 80%;
         display: flex;

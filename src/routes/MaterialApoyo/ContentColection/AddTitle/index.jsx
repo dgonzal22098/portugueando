@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { IoClose } from "react-icons/io5";
 import { TextField } from "@mui/material";
 import { useState } from "react";
+import {device} from "../../../../Breakpoints/breakpoints.js";
 
 // Modulo de agregar un nuevo titulo o item a cierta coleccion
 // Rol: Profesor
@@ -127,6 +128,10 @@ const Modal = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+    
+  @media ${device.mobile} {
+      margin: 0 1rem;
+  }  
 `;
 const ButtonGroup = styled.div`
   display: flex;

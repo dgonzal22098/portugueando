@@ -7,10 +7,13 @@ const ButtonComp = styled.button`
     color: white;
     font-weight: 500;
     border: none;
-    height: 45px;
+    height: 50px;
     font-size: 1rem;
     transition: .1s ease-in-out;
     padding: 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     &:hover{
       cursor: pointer;
       background-color: #44bd5c;

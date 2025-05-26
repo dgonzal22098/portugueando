@@ -1,11 +1,42 @@
 import logoFooter from '../../assets/logos/footerLogo.png'
 import { TiSocialInstagram as InstaIc} from "react-icons/ti";
-import { FaLinkedin as LnkdIc} from "react-icons/fa";
 import { FaFacebook as FacebookIc} from "react-icons/fa";
-import { FaYoutube as YoutubeIc} from "react-icons/fa";
 import styled from 'styled-components'
 import Enlace from './Enlace'
 import {device} from "../../Breakpoints/breakpoints.js";
+
+
+const Footer = () => {
+
+  const homeLink = "/main/home";
+
+  return (
+    <FooterComp>
+        <FooterSection>
+            <Titulos>PORTUGUEANDO</Titulos>
+            <FooterSocial>
+                <Icon><InstaIc /></Icon>
+                <Icon><FacebookIc /></Icon>
+            </FooterSocial>
+        </FooterSection>
+        <FooterSection>
+            <Titulos>EXPLORA</Titulos>
+            <Enlace texto="Home Page" destination={homeLink}/>
+        </FooterSection>
+        <FooterSection>
+            <Titulos>ACERCA DE</Titulos>
+            <Enlace texto="Universidad Ean" destination="https://universidadean.edu.co/"/>
+        </FooterSection>
+        <FooterSection>
+            <Titulos>TÉRMINOS DE USO</Titulos>
+            <Enlace texto="Privacidad" destination="/privacy"/>
+        </FooterSection>
+        <FooterSection>
+        <img src={logoFooter}/>
+        </FooterSection>
+    </FooterComp>)
+}
+export default Footer
 
 const FooterComp = styled.footer`
     width: 100%;
@@ -51,37 +82,3 @@ const Icon = styled.div`
 `;
 
 
-const Footer = () => {
-  return (
-    <FooterComp>
-        <FooterSection>
-            <Titulos>PORTUGUEANDO</Titulos>
-            <FooterSocial>
-                <Icon><InstaIc /></Icon>
-                <Icon><LnkdIc /></Icon>
-                <Icon><FacebookIc /></Icon>
-                <Icon><YoutubeIc /></Icon>
-            </FooterSocial>
-        </FooterSection>
-        <FooterSection>
-            <Titulos>EXPLORA</Titulos>
-            <Enlace texto="Home Page"/>
-            <Enlace texto="Beneficios"/>
-        </FooterSection>
-        <FooterSection>
-            <Titulos>ACERCA DE</Titulos>
-            <Enlace texto="La Plataforma"/>
-            <Enlace texto="Universidad Ean"/>
-        </FooterSection>
-        <FooterSection>
-            <Titulos>TÉRMINOS DE USO</Titulos>
-            <Enlace texto="Privacidad"/>
-            <Enlace texto="Cookies"/>
-            <Enlace texto="Aviso de originalidad"/>
-        </FooterSection>
-        <FooterSection>
-        <img src={logoFooter}/>
-        </FooterSection>
-    </FooterComp>)
-}
-export default Footer

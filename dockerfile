@@ -1,4 +1,4 @@
-FROM node:18 AS build
+FROM node:18
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
@@ -13,14 +13,14 @@ RUN if [ ! -f src/assets/logos/logoUEANblanco.png ]; then \
     touch src/assets/logos/logoUEANblanco.png; \
     fi
 
-# Intentar la construcción
-RUN npm run build
+# Instalar dependencias adicionales
 RUN npm install socket.io-client
 RUN npm install @tanstack/react-query
 RUN npm install framer-motion
-
 RUN npm audit fix
 
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Exponer el puerto
+EXPOSE 5173
+
+# Comando por defecto
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

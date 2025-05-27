@@ -51,12 +51,22 @@ services:
     image: cristhian999/proyecto_de_grado:metabase
     ports:
       - "3000:3000"
-    volumes:
-      - mysql_data:/var/lib/mysql
+    environment:
+      MB_DB_CONNECTION_URI: "mysql://dani:1234@db_portegueando:3306/usuarios?allowPublicKeyRetrieval=true&useSSL=false"
+#      MB_DB_TYPE: mysql
+#      MB_DB_DBNAME: usuarios
+#      MB_DB_PORT: 3306
+#      MB_DB_USER: dani
+#      MB_DB_PASS: 1234
+#      MB_DB_HOST: db_portegueando
+      MB_EMAIL_SMTP_PASSWORD: dani28022016@gmail.com
+      MB_EMAIL_SMTP_USERNAME: MOROSda2
     depends_on:
       - db_portegueando
     networks:
       - app-network
+    volumes:
+      - /dev/urandom:/dev/random:ro
 
 networks:
   app-network:

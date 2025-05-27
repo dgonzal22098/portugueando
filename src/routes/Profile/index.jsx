@@ -20,14 +20,7 @@ const Profile = () => {
             <InformativeCard>
                 <p>Nombre completo: </p>
                 <DataModified>{usuario.name}</DataModified>
-                <p>Programa: </p>
-                <DataModified>Negocios internacionales</DataModified>
-                <p>Fecha de nacimiento: </p>
-                <DataModified>{usuario.dob}</DataModified>
-                <p>Género: </p>
-                <DataModified>Femenino</DataModified>
-                <p>Cédula: </p>
-                <DataModified>{usuario.cedula}</DataModified>
+
                 <p>Correo institucional: </p>
                 <DataModified>{usuario.email}</DataModified>
             </InformativeCard>

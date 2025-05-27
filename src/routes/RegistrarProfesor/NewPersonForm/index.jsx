@@ -66,8 +66,6 @@ export default NewPersonForm
 const fields = [
   {name:"name",label:"Nombres y apellidos", type:"text",placeholder:"Ingrese nombre completo..."},
   {name:"email",label:"Correo institucional", type:"text",placeholder:"Ingrese el correo institucional..."},
-  {name:"id",label:"Cédula", type:"text",placeholder:"Ingrese número de identificación (sin espacios ni puntos)..."},
-  {name:"dob",label:"Fecha de nacimiento", type:"date",placeholder:"Ingrese la fecha de nacimiento..."},
 ]
 const Container = styled.div`
   width: 85%;

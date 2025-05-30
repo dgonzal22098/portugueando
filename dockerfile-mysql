@@ -1,0 +1,8 @@
+FROM mysql:8.0
+
+# Copiar el script de inicialización a la carpeta donde MySQL busca scripts
+# para ejecutar durante la primera inicialización
+COPY init.sql /docker-entrypoint-initdb.d/
+
+# MySQL usará el plugin de autenticación nativo por defecto
+CMD ["--default-authentication-plugin=mysql_native_password"]

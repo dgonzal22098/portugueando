@@ -53,9 +53,9 @@ def login(form_data: schemas.UserLogin, db: Session = Depends(get_db)):
 @router.get("/api/metabase-token")
 def get_iframe_url():
     METABASE_SITE_URL = "http://localhost:3000"
-    METABASE_SECRET_KEY = "8748d8914e18ab079cda9106281f15074c12a8769e9a1df8443526657f3f2be0"
+    METABASE_SECRET_KEY = "d97dd1c77980a6109a01efa565fdeda607a86c26333d03dcae2dcada556af89c"
     payload = {
-        "resource": {"dashboard": 1},
+        "resource": {"dashboard": 34},
         "params": {
 
         },

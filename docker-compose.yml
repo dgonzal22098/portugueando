@@ -32,7 +32,7 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --reload
 
     environment:
-      - DATABASE_URL=mysql+pymysql://dani:1234@db_secundaria:3306/portugues
+      - DATABASE_URL=mysql+pymysql://dani:1234@db_portegueando:3306/portugues
       - SECRET_KEY=e8f2a9b1c7d6508a4f3e2d1b7c9a6f0d5e3b2a8c7f6d5e0b9a8c7f6d5e4b3a2c1
     depends_on:
       - db_portegueando

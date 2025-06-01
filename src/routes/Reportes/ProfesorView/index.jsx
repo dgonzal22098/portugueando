@@ -14,7 +14,6 @@ const ProfesorView = () => {
 
     const isMobile = useMediaQuery(device.mobile);
 
-    const nivelesStr = niveles.map(n => `Nivel ${n}`);
     const estudiantesUnicos = Array.from(
         new Map(estudiantes.map(est => [est.correo, est])).values()
     );
@@ -28,7 +27,9 @@ const ProfesorView = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormState((prev) => ({ ...prev, [name]: value }));
+        const parsedValue = name === 'niveles' ? parseInt(value) : value;
+
+        setFormState((prev) => ({ ...prev, [name]: parsedValue }));
     };
 
     const [fecha, setFecha] = useState(dayjs());
@@ -105,7 +106,7 @@ const ProfesorView = () => {
                     label="Niveles"
                     onChange={handleChange}
                 >
-                    {nivelesStr.map((nivel, index) => (
+                    {niveles.map((nivel, index) => (
                         <MenuItem key={index} value={nivel}>{nivel}</MenuItem>
                     ))}
                 </Select>

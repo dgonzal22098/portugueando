@@ -70,7 +70,7 @@ const GruposDocentesNivel = () => {
             <Button onClick={() => setShowStudentForm(true)}>Agregar manual</Button>
 
           </ButtonCont>
-          <p className="advise">Archivo .csv</p>
+          <p className="advise">Archivo .csv separado por punto y coma.</p>
 
         </GrupoContainer>
 

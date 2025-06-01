@@ -22,6 +22,24 @@ const StudentRegistrationForm = ({onCancel, setShowStudentForm}) => {
       setInfoStudent(prev => ({ ...prev, [name]:value }));
     }
 
+    const handleContinuar = () => {
+        const { fullName, email } = studentInfo;
+        const emailRegex = /^[^\s@]+@universidadean\.edu\.co$/;
+
+        if (!fullName || !email) {
+            alert('Todos os campos são obrigatórios.');
+            return;
+        }
+
+        if (!emailRegex.test(email)) {
+            alert("Ingrese un correo institucional válido que termine en @universidadean.edu.co.");
+            return;
+        }
+
+        setShowStudentModal(true);
+    }
+
+
     return (
         <Container>
             <Titulo>Nuevo estudiante</Titulo>
@@ -40,7 +58,7 @@ const StudentRegistrationForm = ({onCancel, setShowStudentForm}) => {
             ))}
 
             <ButtonGroup>
-                <Boton onClick={() => setShowStudentModal(true)}>Confirmar</Boton>
+                <Boton onClick={handleContinuar}>Confirmar</Boton>
                 <Boton className="Cancel" onClick={onCancel}>Cancelar</Boton>
             </ButtonGroup>
 

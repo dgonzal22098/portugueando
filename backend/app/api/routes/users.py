@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from typing import List
 from ...database import get_db
 from ... import schemas, crud, models
+import jwt
+import time
 
 router = APIRouter()
 
@@ -41,8 +43,24 @@ def login(form_data: schemas.UserLogin, db: Session = Depends(get_db)):
     # Simplificado para demostración - sin tokens JWT aún
     return {
         "id": user.id,
-        "username": user.username,
+        "name": user.name,
         "email": user.email,
         "is_active": user.is_active,
         "rol": user.rol
     }
+
+
+@router.get("/api/metabase-token")
+def get_iframe_url():
+    METABASE_SITE_URL = "http://localhost:3000"
+    METABASE_SECRET_KEY = "d97dd1c77980a6109a01efa565fdeda607a86c26333d03dcae2dcada556af89c"
+    payload = {
+        "resource": {"dashboard": 34},
+        "params": {
+
+        },
+        "exp": round(time.time()) + (60 * 10)  # 10 minute expiration
+    }
+    token = jwt.encode(payload, METABASE_SECRET_KEY, algorithm="HS256")
+    iframe_url = METABASE_SITE_URL + "/embed/dashboard/" + token + "#bordered=true&titled=true"
+    return {"iframeUrl": iframe_url}

@@ -1,20 +1,27 @@
-version: '3.8'
-
 services:
   db_portegueando:
-    image: mysql:8.0
+    build:
+      context: .
+      dockerfile: dockerfile-mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: MOROSda2
       MYSQL_DATABASE: usuarios
       MYSQL_USER: dani
       MYSQL_PASSWORD: 1234
+    command: --default-authentication-plugin=mysql_native_password
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
       - app-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$MYSQL_ROOT_PASSWORD" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   backend_portu:
     build: ./backend
@@ -25,7 +32,7 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --reload
 
     environment:
-      - DATABASE_URL=mysql+pymysql://dani:1234@db_portegueando:3306/usuarios
+      - DATABASE_URL=mysql+pymysql://dani:1234@db_portegueando:3306/portugues
       - SECRET_KEY=e8f2a9b1c7d6508a4f3e2d1b7c9a6f0d5e3b2a8c7f6d5e0b9a8c7f6d5e4b3a2c1
     depends_on:
       - db_portegueando
@@ -51,10 +58,21 @@ services:
     image: cristhian999/proyecto_de_grado:metabase
     ports:
       - "3000:3000"
+    environment:
+      MB_DB_TYPE: mysql
+      MB_DB_HOST: db_portegueando
+      MB_DB_PORT: 3306
+      MB_DB_DBNAME: usuarios
+      MB_DB_USER: dani
+      MB_DB_PASS: 1234
+      MB_DB_CONNECTION_URI: "jdbc:mysql://db_portegueando:3306/usuarios?user=dani&password=1234&allowPublicKeyRetrieval=true&useSSL=false"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - /dev/urandom:/dev/random:ro
+##      - "C:/Users/daniel.rodriguez/Downloads/metabase:/metabase"
+##    entrypoint: ["java", "--add-opens", "java.base/java.nio=ALL-UNNAMED", "-jar", "/metabase/metabase.jar", "load-from-h2", "/metabase/metabase.db"]
     depends_on:
-      - db_portegueando
+      db_portegueando:
+        condition: service_healthy
     networks:
       - app-network
 

@@ -59,8 +59,6 @@ export default StudentRegistrationForm
 const fields = [
   {name: "fullName", label:"Nombres y apellidos", type:"text",placeholder:"Sin caracteres especiales..."},
   {name: "email",label:"Correo institucional", type:"text",placeholder:"name@universidadean.edu.co..."},
-  {name: "id",label:"Cédula", type:"text",placeholder:"Ingrese número de identificación (sin espacios ni puntos)..."},
-  {name: "dob" ,label:"Fecha de nacimiento", type:"date",placeholder:"Ingrese la fecha de nacimiento..."},
 ]
 const Container = styled.div`
   width: 100%;

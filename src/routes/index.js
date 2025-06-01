@@ -45,3 +45,6 @@ export { default as MaterialApoyo } from './MaterialApoyo';
 
 // Exporta el componente HomePage (Pagina de bienvenida) desde './HomePage'
 export { default as HomePage } from './HomePage';
+
+// Exporta la pagina de politica de privacidad desde './PoliticaPrivacidad'
+export { default as Privacy } from './Privacy';

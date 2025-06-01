@@ -21,7 +21,7 @@ app.get("/metabase-url", (req, res) => {
 
     const token = jwt.sign(payload, METABASE_SECRET_KEY);
 
-    const iframeUrl = `${METABASE_SITE_URL}/embed/question/${token}#bordered=true&titled=true`;
+    const iframeUrl = METABASE_SITE_URL + "/embed/dashboard/" + token + "#bordered=true&titled=true";
 
     res.json({ iframeUrl });
 });

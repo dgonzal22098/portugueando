@@ -45,7 +45,7 @@ def login(form_data: schemas.UserLogin, db: Session = Depends(get_db)):
         "id": user.id,
         "name": user.name,
         "email": user.email,
-        "is_active": user.is_active,
+        "estado": user.estado,
         "rol": user.rol
     }
 
@@ -64,3 +64,47 @@ def get_iframe_url():
     token = jwt.encode(payload, METABASE_SECRET_KEY, algorithm="HS256")
     iframe_url = METABASE_SITE_URL + "/embed/dashboard/" + token + "#bordered=true&titled=true"
     return {"iframeUrl": iframe_url}
+
+# app/routers/users.py
+@router.get("/main/registro_profesor/", response_model=List[dict])
+def read_profesores(db: Session = Depends(get_db)):
+    try:
+        profesores = db.query(models.User).filter(
+            models.User.rol == "Profesor"
+        ).all()
+
+        return [
+            {
+                "namepro": profesor.name,
+                "emailpro": profesor.email,
+                "estado": profesor.estado
+            }
+            for profesor in profesores
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/main/dashboard/{nivel_id}/{grupo_id}", response_model=List[dict])
+def read_students(nivel_id: int, grupo_id: int, db: Session = Depends(get_db)):
+    try:
+        print(f"Buscando nivel {nivel_id} grupo {grupo_id}")
+        nivel1 = db.query(models.Nivel).filter(
+            models.Nivel.nivel == nivel_id,
+            models.Nivel.grupo == grupo_id
+        ).all()
+        print(f"Resultados encontrados: {len(nivel1)}")
+
+        return [
+            {
+                "id": n.id,
+                "nombre": n.nombre,
+                "email": n.email,
+                "nivel": n.nivel
+            }
+            for n in nivel1
+        ]
+
+    except Exception as e:
+        print(f"Error en la consulta: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

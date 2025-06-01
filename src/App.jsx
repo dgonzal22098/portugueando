@@ -1,6 +1,7 @@
 import { BrowserRouter,Routes,Route } from 'react-router-dom'
 import {NewPassword, Recover, Main, Login, Dashboard, Profile, Reportes, Grupos, Cursos, GruposHistoricos, GruposDocente, GruposDocentesNivel, MaterialApoyo, RegistrarProfesor, HomePage, Privacy} from './routes'
 import ProtectedRoute from "./routes/ProtectedRoute";
+import ListaProfesores from "./routes/RegistrarProfesor/InformativeCard/ListaProfesores.jsx";
 
 
 function App() {
@@ -13,7 +14,6 @@ function App() {
           <Route path="/recover" element={<Recover />} />
           <Route path="/newpassword" element={<NewPassword />} />
           <Route path="/privacy" element={<Privacy />} />
-
           {/* Rutas privadas */}
 
           <Route path="/main"
@@ -29,6 +29,7 @@ function App() {
             <Route path="grupos" element={<Grupos />}/>
             <Route path="grupos_historicos" element={<GruposHistoricos />} />
             <Route path="registro_profesor" element={<RegistrarProfesor />} />
+            <Route path="profesores" element={<ListaProfesores />} />
             <Route path="cursos" element={<Cursos />}/>
             <Route path="grupos_docente" element={<GruposDocente />}/>
             <Route path="groups_assigned_docente" element={<GruposDocentesNivel />}/>

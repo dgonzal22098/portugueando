@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr
+from typing import Optional
 
 
 class UserBase(BaseModel):
@@ -17,7 +18,27 @@ class UserLogin(BaseModel):
 
 class User(UserBase):
     id: int
-    is_active: bool
+    estado: int
 
     class Config:
         from_attributes = True
+
+class UserProf(BaseModel):
+    namepro: str
+    emailpro: str
+    estado: int
+
+    class Config:
+        from_attributes = True
+
+
+class NivelBase(BaseModel):
+    nombre: str
+    nivel: int
+    grupo: int
+
+class Nivel(NivelBase):
+    id: int
+
+    class Config:
+        orm_mode = True

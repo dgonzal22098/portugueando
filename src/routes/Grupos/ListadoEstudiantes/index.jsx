@@ -1,11 +1,15 @@
 import styled from "styled-components";
 import { IoClose } from "react-icons/io5";
+import {useState} from "react";
 
 // Modal de lista de estudiantes, podria considerarse como la lista de estudiantes historicos
 // Rol: Administrador, Profesor
 // Logica: trae los datos de la base de datos, los estudiantes que hayan sido modificados en alguna forma, podria considerarse esta opcion.
 
 const ListadoEstudiantes = ({ setShowEstudiantes }) => {
+
+  const [descargarLista, setDescargarLista] = useState([]);
+
   return (
     <Overlay onClick={() => setShowEstudiantes(false)}>
       <Modal onClick={(e) => e.stopPropagation()}>
@@ -25,7 +29,7 @@ const ListadoEstudiantes = ({ setShowEstudiantes }) => {
         </EstudiantesList>
 
         <ButtonGroup>
-          <Button>Descargar Excel</Button>
+          <Button >Descargar Excel</Button>
           <Button className="cerrar" onClick={() => setShowEstudiantes(false)}>Cerrar</Button>
         </ButtonGroup>
       </Modal>

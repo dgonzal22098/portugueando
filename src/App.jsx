@@ -12,7 +12,7 @@ function App() {
           {/* Rutas publicas */}
           <Route path="/" element={<Login />} />
           <Route path="/recover" element={<Recover />} />
-          <Route path="/newpassword" element={<NewPassword />} />
+          <Route path="/reset-password" element={<NewPassword />} />
           <Route path="/privacy" element={<Privacy />} />
           {/* Rutas privadas */}
 

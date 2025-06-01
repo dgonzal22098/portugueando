@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import { IoClose } from "react-icons/io5";
 import PhotoUser from "../../../assets/pictures/userNone.png"
 import {device} from "../../../Breakpoints/breakpoints"
+import {useState} from "react";
 
 // Modal de la foto de perfil
 // Rol: Todos
@@ -9,10 +10,8 @@ import {device} from "../../../Breakpoints/breakpoints"
 // Pendiente: Hacer un pop up cuando se suba y se cambie correctamente la foto de perfil.
 
 const ProfilePictureModal = ({setShowPictureModal}) => {
+    const [selectedFile, setSelectedFile] = useState(null);
 
-    {/*
-        faltaria la logica para enviar la nueva imagen de perfil a la base de datos
-    */}
 
     return (
         <Overlay onClick={() => setShowPictureModal(false)}>
@@ -33,7 +32,12 @@ const ProfilePictureModal = ({setShowPictureModal}) => {
                             accept="image/*"
                             style={{display: "none"}}
                             onClick={() => setShowPictureModal(false)}
-                            onChange=""
+                            onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                    setSelectedFile(file);
+                                }
+                            }}
                         />
                     </StyledButton>
                 </ItemsContainer>

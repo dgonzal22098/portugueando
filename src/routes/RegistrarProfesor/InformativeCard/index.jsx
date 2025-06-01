@@ -6,6 +6,10 @@ import AlertActivation from "../Alert";
 import ModalCursosInscritos from "./ModalCursosInscritos";
 import {device} from "../../../Breakpoints/breakpoints.js"
 
+// Componente de informacion de un docente
+// Rol: Administrador
+// Logica: Este componente muestra la informacion de los docentes registrado
+// Revisar: Logica para que el estado del profesor si es cambiado se obtenga del modal Alert
 
 const InformativeCard = ({usuario}) => {
     const [isActivated, setIsActivated] = useState(usuario?.estado === 1);

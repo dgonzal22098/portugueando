@@ -16,6 +16,17 @@ const CrearGrupoModal = ({ setShowCrearGrupoModal }) => {
         horario: "",
     });
 
+    const handleContinuar = () => {
+        const {numero, docente, horario} = groupInfo;
+
+        if (!numero || !docente || !horario) {
+            alert('Todos os campos são obrigatórios.');
+            return;
+        }
+
+        setShowConfirmation(true);
+    }
+
     const handleChange = (e) => {
         const {name, value} = e.target;
         setGroupInfo(prev => ({
@@ -49,7 +60,9 @@ const CrearGrupoModal = ({ setShowCrearGrupoModal }) => {
             <Select 
             name="numero"
             className="classicSelectStyle" defaultValue=""
-            onChange={handleChange}>
+            onChange={handleChange}
+            required
+            >
                 <option value="" disabled>Seleccione el número del grupo</option>
                 <option>1</option>
                 <option>2</option>
@@ -58,18 +71,20 @@ const CrearGrupoModal = ({ setShowCrearGrupoModal }) => {
 
     {/* los profesores se traen de la base de datos, alli se agregaron y registraron los docentes participantes en el semestre academico */}
 
-            <Select 
-            name="docente"
-            className="classicSelectStyle" defaultValue=""
-            onChange={handleChange}>
-                <option value="" disabled>Seleccione el docente</option>
-                <option>Andres galpon</option>
-                <option>federico sancocho</option>
-                <option>gabriela sierra</option>
+            <Select
+                required
+                name="docente"
+                className="classicSelectStyle" defaultValue=""
+                onChange={handleChange}>
+                    <option value="" disabled>Seleccione el docente</option>
+                    <option>Andres galpon</option>
+                    <option>federico sancocho</option>
+                    <option>gabriela sierra</option>
             </Select>
 
             {/* los horarios se traen de la base de datos que estan establecidas por defecto o los que el administrador desee agregar */}
-            <Select 
+            <Select
+            required
             name="horario"
             className="classicSelectStyle" defaultValue=""
             onChange={handleChange}>
@@ -88,7 +103,7 @@ const CrearGrupoModal = ({ setShowCrearGrupoModal }) => {
             {showConfirmation ? 
             <Button onClick={() => setShowCrearGrupoModal(false)}>Confirmar</Button> 
             : 
-            <Button onClick={() => setShowConfirmation(true)}>Continuar</Button>}
+            <Button onClick={handleContinuar}>Continuar</Button>}
             
             <Button className="cancel" onClick={() => setShowCrearGrupoModal(false)}>Cancelar</Button>
 

@@ -12,25 +12,37 @@ import {device} from "../../../../Breakpoints/breakpoints.js";
 
 const NuevoItem = ({ setShowAddItem }) => {
 
-    const [titulo, setTitulo] = useState('');
-    const [nivel, setNivel] = useState('');
-    const [tipoColeccion, setTipoColeccion] = useState('');
     const [showSuccess, setShowSuccess] = useState(false);
 
+    const [newItem, setNewItem] = useState({
+        titulo: "",
+        nivel: "",
+        tipoColeccion: "",
+        link: "",
+        archivo: null,
+    })
 
-    const handleCompletar = () => {
-      if (!titulo || !nivel || !tipoColeccion) return;
-    
-      // Aquí podrías hacer tu petición a backend o guardar localmente
-    
-      setShowSuccess(true); 
-      setTimeout(() => setShowSuccess(false), 3000); 
-    
-      setTitulo('');
-      setNivel('');
-      setTipoColeccion('');
+    const handleConfirmar = () => {
+        const { titulo, nivel, tipoColeccion, link, archivo } = newItem;
+
+        if (!titulo || !nivel || !tipoColeccion) {
+            alert('Todos os campos obrigatórios devem ser preenchidos.');
+            return;
+        }
+
+        if ((tipoColeccion === 'Link' || tipoColeccion === 'Video') && !link) {
+            alert('Você deve fornecer um link válido para o recurso.');
+            return;
+        }
+
+        if ((tipoColeccion === 'PDF' || tipoColeccion === 'Word') && !archivo) {
+            alert(`Você deve fazer upload de um arquivo do tipo ${tipoColeccion}.`);
+            return;
+        }
+
+        setShowSuccess(true);
     };
-    
+
 
 
 
@@ -42,55 +54,95 @@ const NuevoItem = ({ setShowAddItem }) => {
             <IoClose size={24} />
             </CloseButton>
             
-            <h2 style={{margin:"2rem",textAlign:"center"}}>Agregar nuevo item</h2>
+            <h2 style={{margin:"2rem",textAlign:"center"}}>Adicionar novo item</h2>
     
-            <TextField 
-            label="Título de la item"
-            value={titulo}
-            onChange={(e) => setTitulo(e.target.value)}/>
+            <TextField
+
+                label="Título do item"
+                value={newItem.titulo}
+                onChange={(e) => setNewItem({...newItem, titulo: e.target.value})}/>
             
             
             <Select 
-            className="classicSelectStyle" 
-            defaultValue=""
-            value={nivel}
-            onChange={(e) => setNivel(e.target.value)}>
-              <option value="" disabled>Nivel</option>
-              {Niveles.map((numero, index) => (
-                  <option key={index} value={numero}>{numero}</option>
-                ))}
+                className="classicSelectStyle"
+                defaultValue=""
+                value={newItem.nivel}
+                onChange={(e) => setNewItem({...newItem, nivel: e.target.value})}>
+                  <option value="" disabled>Nível</option>
+                  {Niveles.map((numero, index) => (
+                      <option key={index} value={numero}>{numero}</option>
+                    ))}
             </Select>
 
             <Select 
               className="classicSelectStyle" 
-              value={tipoColeccion} 
-              onChange={(e) => setTipoColeccion(e.target.value)}
+              value={newItem.tipoColeccion}
+              onChange={
+                (e) => {
+                    const tipo = e.target.value;
+                    setNewItem({
+                        ...newItem,
+                        tipoColeccion: tipo,
+                        link: "",
+                        archivo: null,
+                    });
+                }}
             >
-              <option value="" disabled>Tipo de colección</option>
+              <option value="" disabled>Tipo de coleção</option>
               {TiposDeColeccion.map((tipo, index) => (
                 <option key={index} value={tipo}>{tipo}</option>
               ))}
             </Select>
             
-            {tipoColeccion === 'Link' && (
-              <TextField label="URL del recurso" fullWidth />
+            {(newItem.tipoColeccion === 'Link' || newItem.tipoColeccion === 'Vídeo') && (
+              <TextField
+
+                  label="URL do recurso"
+                  fullWidth
+                  value={newItem.link}
+                  onChange={(e) => setNewItem({...newItem, link: e.target.value})}
+              />
             )}
 
-            {(tipoColeccion === 'PDF' || tipoColeccion === 'Word' || tipoColeccion === 'Video') && (
-              <div style={{marginLeft:"1.5rem"}}>
-                <label>Subir archivo ({tipoColeccion})</label>
-                <input type="file" accept={tipoColeccion === 'Video' ? 'video/*' : tipoColeccion === 'PDF' ? 'application/pdf' : '.doc,.docx'} />
-              </div>
+            {['PDF', 'Word'].includes(newItem.tipoColeccion) && (
+                <div style={{ marginLeft: "1.5rem" }}>
+                    <label>Carregar arquivo ({newItem.tipoColeccion})</label>
+                    <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginTop: "0.5rem" }}>
+                        <label
+                            htmlFor="file-upload"
+                            style={{
+                                backgroundColor: "#007bff",
+                                color: "white",
+                                padding: "0.1rem 1rem",
+                                borderRadius: "5px",
+                                cursor: "pointer",
+                            }}
+                        >
+                            Selecionar arquivo
+                        </label>
+                        <span style={{fontSize:"1rem"}}>{newItem.archivo?.name || "Nenhum arquivo selecionado"}</span>
+                    </div>
+                    <input
+                        id="file-upload"
+                        type="file"
+                        accept={newItem.tipoColeccion === 'PDF' ? 'application/pdf' : '.doc,.docx'}
+                        style={{ display: "none" }}
+                        onChange={(e) =>
+                            setNewItem({ ...newItem, archivo: e.target.files[0] })
+                        }
+                    />
+                </div>
             )}
+
 
             <ButtonGroup>
-              <Button onClick={handleCompletar}>Completar</Button>
-              <Button className="cerrar" onClick={() => setShowAddItem(false)}>Cerrar</Button>
+              <Button onClick={handleConfirmar}>Completo</Button>
+              <Button className="cerrar" onClick={() => setShowAddItem(false)}>Fechar</Button>
             </ButtonGroup>
         </Modal>
 
         {showSuccess && (
-          <SuccessPopup>¡Colección creada exitosamente!</SuccessPopup>
+          <SuccessPopup>Coleção criada com sucesso!</SuccessPopup>
         )}
 
 
@@ -103,7 +155,7 @@ export default NuevoItem;
 const Niveles = [
   1,2,3,4,5,6
 ];  
-const TiposDeColeccion = ['Video', 'Link', 'PDF', 'Word'];
+const TiposDeColeccion = ['Vídeo', 'Link', 'PDF', 'Word'];
 const Overlay = styled.div`
   position: fixed;
   top: 0;

@@ -10,6 +10,8 @@ import {device} from "../../../../../Breakpoints/breakpoints.js";
 
 const UploadFile = ({setShowUploadModal, setStudentUploaded}) => {
     const [showSuccess, setShowSuccess] = useState(false);
+    const [file, setFile] = useState(null);
+
     
     const handleSubmit = (e) => {
       e.preventDefault();
@@ -43,7 +45,14 @@ const UploadFile = ({setShowUploadModal, setStudentUploaded}) => {
                     </CloseButton>
 
                     <h3 style={{margin:"1rem"}}>Haga click en "Choose File" para subir el archivo .csv</h3>
-                    <input type="file" id="myFile" className="myFile" name="filename" />
+                    <input
+                        type="file"
+                        id="myFile"
+                        className="myFile"
+                        name="filename"
+                        accept=".csv, .xlsx"
+                        onChange={(e) => setFile(e.target.files[0]) }
+                    />
 
                     <ModalButtons>
 

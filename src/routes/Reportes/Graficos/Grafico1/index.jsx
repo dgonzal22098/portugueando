@@ -9,12 +9,26 @@ const MetabaseDashboard = () => {
     useEffect(() => {
         const fetchMetabaseUrl = async () => {
             try {
-                // Ajusta esta URL si tu servidor Express está en una dirección diferente
-                const response = await axios.get('http://localhost:3001/metabase-url');
+                // Intentar obtener el token usando la sesión (cookies)
+                const response = await axios.get('http://localhost:8000/api/metabase-token');
                 setIframeUrl(response.data.iframeUrl);
             } catch (err) {
                 console.error("Error al obtener la URL de Metabase:", err);
-                setError("No se pudo cargar el dashboard de Metabase. Por favor, intenta de nuevo más tarde.");
+
+                // Si falla, intentar con los datos del localStorage como respaldo
+                try {
+                    const userData = JSON.parse(localStorage.getItem('usuarioLogueado'));
+                    if (userData && userData.email && userData.rol) {
+                        // Hacer la petición con parámetros de consulta
+                        const fallbackResponse = await axios.get(`http://localhost:8000/api/metabase-token?email=${userData.email}&rol=${userData.rol}`);
+                        setIframeUrl(fallbackResponse.data.iframeUrl);
+                    } else {
+                        throw new Error("No hay datos de usuario disponibles");
+                    }
+                } catch (fallbackErr) {
+                    console.error("Error en el método de respaldo:", fallbackErr);
+                    setError("No se pudo cargar el dashboard. Por favor, intenta iniciar sesión de nuevo.");
+                }
             } finally {
                 setLoading(false);
             }
@@ -22,6 +36,7 @@ const MetabaseDashboard = () => {
 
         fetchMetabaseUrl();
     }, []);
+
 
     if (loading) {
         return <div style={{ textAlign: 'center', padding: '20px' }}>Cargando dashboard de Metabase...</div>;

@@ -10,8 +10,8 @@ import {device} from "../../../Breakpoints/breakpoints"
 
 const ContentColection = ({selectedColection, setShowColection, setShowColectionContent, setSelectedColection, usuario}) => {
 
-
     const [showAddItem,setShowAddItem] = useState(false);
+
 
     const handleCancel = () => {
         setShowColection(true);

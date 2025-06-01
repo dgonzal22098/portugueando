@@ -15,6 +15,7 @@ const ProfilePicture = () => {
 
     const [showProfileModal, setShowProfileModal] = useState(false);
     const isTablet = useMediaQuery("(max-width: 768px)");
+    const [selectedFile, setSelectedFile] = useState(null);
 
 
     return (
@@ -33,7 +34,18 @@ const ProfilePicture = () => {
                 <Overlay className="overlay">
                     <label htmlFor="uploadInput">Subir imagen</label>
                     <button onClick={() => setShowProfileModal(true)}>Ver imagen</button>
-                    <input type="file" id="uploadInput" accept="image/*" hidden />
+                    <input
+                        type="file"
+                        id="uploadInput"
+                        accept="image/*"
+                        hidden
+                        onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                                setSelectedFile(file);
+                            }
+                        }}
+                    />
                 </Overlay>
             ) : (
                     <ButtonGroup>

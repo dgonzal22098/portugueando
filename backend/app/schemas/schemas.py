@@ -1,5 +1,4 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
 
 
 class UserBase(BaseModel):
@@ -30,6 +29,15 @@ class UserProf(BaseModel):
 
     class Config:
         from_attributes = True
+
+class EmailSchema(BaseModel):
+    email: str
+
+
+class ResetPasswordSchema(BaseModel):
+    token: str
+    new_password: str
+
 
 
 class NivelBase(BaseModel):

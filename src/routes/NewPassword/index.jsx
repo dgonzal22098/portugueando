@@ -1,8 +1,8 @@
 import styled from "styled-components";
-import { Link, Navigate, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import {Card, Formulario, Inputs, Button} from '../../componentes'
-
+import axios from 'axios';
 
 //Modulo de nueva contraseña
 // Rol: Todos
@@ -10,61 +10,80 @@ import {Card, Formulario, Inputs, Button} from '../../componentes'
 
 
 const NewPassword = () => {
-
-    const [newPassword, setNewPassword] = useState("");
-    const [submitted, setSubmitted] = useState(false);
-    const [passConfirmation, setPassConfirmation] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
+    const token = new URLSearchParams(location.search).get('token');
+
+    useEffect(() => {
+        if (!token) {
+            navigate('/');
+        }
+    }, [token, navigate]);
 
     async function handleSubmit(e) {
         e.preventDefault();
-        setSubmitted(true);
-        setTimeout(
-            () => {
-                navigate("/"); 
-            }, 3000
-        ) 
+
+        // Validar que las contraseñas coincidan
+        if (password !== confirmPassword) {
+            setError("Las contraseñas no coinciden");
+            return;
+        }
+
+        if (password.length < 6) {
+            setError("La contraseña debe tener al menos 6 caracteres");
+            return;
+        }
+
+        try {
+            await axios.post('http://localhost:8000/reset-password/', {
+                token: token,
+                new_password: password
+            });
+
+            setSuccess(true);
+            setError("");
+
+            // Redirigir al login después de 3 segundos
+            setTimeout(() => {
+                navigate('/');
+            }, 3000);
+        } catch (error) {
+            setError(error.response?.data?.detail || "Error al restablecer la contraseña");
+        }
     }
 
     return (
         <Background>
-            <Card title="Nueva contraseña">
-                {!submitted ? 
-                (<Formulario onSubmit={handleSubmit}>
-                    <Inputs 
-                        type="password"
-                        placeholder="Ingrese la nueva contraseña..."
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                    />
-                    <Inputs 
-                        type="password"
-                        placeholder="Confirme la nueva contraseña..."
-                        value={passConfirmation}
-                        onChange={(e) => setPassConfirmation(e.target.value)}
-                    />
-                    <Recomendations>
-                        <li>La contraseña debe tener más de 9 dígitos</li>
-                        <li>La contraseña debe contener al menos 1 número</li>
-                        <li>La contraseña debe contener al menos 1 carácter especial (*$#)</li>
-                        <li>La contraseña debe contener al menos 1 letra mayúscula y 1 minúscula</li>  
-                    </Recomendations>
-                    <Button type="submit" texto="Cambiar contraseña"/>
-                    <Wrapper>Ya tienes una cuenta?{" "}
-                        <Link 
-                            to="/"
-                            style={{cursor:"pointer"}}
-                        >Ingresa aquí...
-                        </Link>
-                    </Wrapper>
-                </Formulario>) : (
+            <Card title="Restablecer contraseña">
+                {!success ? (
+                    <Formulario onSubmit={handleSubmit}>
+                        <Inputs
+                            type="password"
+                            placeholder="Nueva contraseña"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <Inputs
+                            type="password"
+                            placeholder="Confirmar contraseña"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
+                        {error && <ErrorMessage>{error}</ErrorMessage>}
+                        <Button type="submit" texto="Restablecer contraseña"/>
+                    </Formulario>
+                ) : (
                     <Message>
-                        Contraseña cambiada con éxito. Vuelve a ingresar !
+                        Contraseña restablecida correctamente. Serás redirigido al inicio de sesión.
                     </Message>
                 )}
             </Card>
-    </Background>        
-    )
+        </Background>
+    );
 }
 
 export default NewPassword

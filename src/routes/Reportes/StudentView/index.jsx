@@ -1,8 +1,10 @@
+import MetabaseDashboard from "../Graficos/Grafico1/index.jsx";
 
 const StudentView = () => {
     return (
         <>
-            <h1>Student view</h1>
+            <h1>Reportes</h1>
+            <MetabaseDashboard />
         </>
     )
 }

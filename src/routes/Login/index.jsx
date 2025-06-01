@@ -6,6 +6,8 @@ import { useState } from "react";
 import axios from "axios";
 import TextField from '@mui/material/TextField';
 
+axios.defaults.withCredentials = true;
+
 // quedaria pendiente asegurarse de que el error que tenga la validacion se muestre en el texthelper 
 
 const Login = () => {
@@ -28,13 +30,13 @@ const Login = () => {
             const res = await axios.post("http://localhost:8000/login/", {
                 email,
                 password,
-            });
+            }, { withCredentials: true });
 
             localStorage.setItem('usuarioLogueado', JSON.stringify(res.data));
             setError('');
             setInputError({email:false, password:false});
             navigate("/main/home");
-            
+
         } catch (error) {
             console.error("Error al iniciar sesión", error);
             setError("Correo o contraseña incorrectos");

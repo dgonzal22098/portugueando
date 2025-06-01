@@ -3,21 +3,22 @@ services:
     build:
       context: .
       dockerfile: dockerfile-mysql
+    container_name: db_portegueando
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: MOROSda2
-      MYSQL_DATABASE: usuarios
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: portugues  # Cambiado a portugues
       MYSQL_USER: dani
       MYSQL_PASSWORD: 1234
-    command: --default-authentication-plugin=mysql_native_password
     ports:
       - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$MYSQL_ROOT_PASSWORD" ]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -29,15 +30,25 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/code
-    command: uvicorn app.main:app --host 0.0.0.0 --reload
-
+    command: >
+      sh -c "
+        echo 'Waiting for MySQL to be ready...'
+        while ! nc -z db_portegueando 3306; do
+          sleep 1
+        done
+        echo 'MySQL is ready'
+        uvicorn app.main:app --host 0.0.0.0 --reload
+      "
     environment:
-      - DATABASE_URL=mysql+pymysql://dani:1234@db_portegueando:3306/portugues
+      - DATABASE_URL=mysql+pymysql://dani:1234@db_portegueando:3306/portugues?charset=utf8mb4
+
       - SECRET_KEY=e8f2a9b1c7d6508a4f3e2d1b7c9a6f0d5e3b2a8c7f6d5e0b9a8c7f6d5e4b3a2c1
     depends_on:
-      - db_portegueando
+      db_portegueando:
+        condition: service_healthy
     networks:
       - app-network
+
 
   frontend_puto:
     build:
@@ -81,4 +92,4 @@ networks:
     driver: bridge
 
 volumes:
-  mysql_data:
+    db_data:

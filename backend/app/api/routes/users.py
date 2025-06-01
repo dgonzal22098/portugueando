@@ -95,7 +95,7 @@ def login(form_data: schemas.UserLogin, db: Session = Depends(get_db)):
         "id": user.id,
         "name": user.name,
         "email": user.email,
-        "is_active": user.is_active,
+        "estado": user.estado,
         "rol": user.rol
     }
 
@@ -155,6 +155,115 @@ def get_iframe_url(
     iframe_url = METABASE_SITE_URL + "/embed/dashboard/" + token + "#bordered=true&titled=true"
     return {"iframeUrl": iframe_url}
 
+@router.post("/recover/")
+async def recover_password(
+        email_data: schemas.EmailSchema,
+        background_tasks: BackgroundTasks,
+        db: Session = Depends(get_db)
+):
+    user = crud.get_user(db, email=email_data.email)
+    if not user:
+        # Para prevenir enumeración de usuarios, devolvemos siempre el mismo mensaje
+        return {
+            "message": "Si el correo existe en nuestra base de datos, recibirás un enlace para restablecer tu contraseña."}
+
+    # Generar token único
+    token = secrets.token_urlsafe(32)
+    expiry = datetime.now() + timedelta(minutes=30)
+
+    # Guardar token (en producción usar base de datos)
+    password_reset_tokens[token] = {
+        "email": user.email,
+        "expiry": expiry
+    }
+
+    # Enviar correo en segundo plano
+    background_tasks.add_task(send_password_reset_email, user.email, token)
+
+    return {
+        "message": "Si el correo existe en nuestra base de datos, recibirás un enlace para restablecer tu contraseña."}
+
+
+@router.post("/reset-password/")
+async def reset_password(
+        reset_data: schemas.ResetPasswordSchema,
+        db: Session = Depends(get_db)):
+
+    print(f"Recibida solicitud de restablecimiento con token: {reset_data.token}")
+    print(f"Tokens disponibles: {list(password_reset_tokens.keys())}")
+
+    token = reset_data.token
+    new_password = reset_data.new_password
+
+    # Verificar si el token existe y no ha expirado
+    if token not in password_reset_tokens:
+        raise HTTPException(status_code=400, detail="Token inválido o expirado")
+
+    token_data = password_reset_tokens[token]
+    if datetime.now() > token_data["expiry"]:
+        # Eliminar token expirado
+        del password_reset_tokens[token]
+        raise HTTPException(status_code=400, detail="Token expirado")
+
+    # Obtener el email asociado al token
+    email = token_data["email"]
+
+    # Actualizar la contraseña del usuario
+    user = crud.get_user(db, email=email)
+    if not user:
+        raise HTTPException(status_code=400, detail="Usuario no encontrado")
+
+    # Actualizar contraseña (asumiendo que tienes una función para esto)
+    crud.update_user_password(db, user.id, new_password)
+
+    # Eliminar el token usado
+    del password_reset_tokens[token]
+
+    return {"message": "Contraseña actualizada correctamente"}
+
+# app/routers/users.py
+@router.get("/main/registro_profesor/", response_model=List[dict])
+def read_profesores(db: Session = Depends(get_db)):
+    try:
+        profesores = db.query(models.User).filter(
+            models.User.rol == "Profesor"
+        ).all()
+
+        return [
+            {
+                "namepro": profesor.name,
+                "emailpro": profesor.email,
+                "estado": profesor.estado
+            }
+            for profesor in profesores
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/main/dashboard/{nivel_id}/{grupo_id}", response_model=List[dict])
+def read_students(nivel_id: int, grupo_id: int, db: Session = Depends(get_db)):
+    try:
+        print(f"Buscando nivel {nivel_id} grupo {grupo_id}")
+        nivel1 = db.query(models.Nivel).filter(
+            models.Nivel.nivel == nivel_id,
+            models.Nivel.grupo == grupo_id
+        ).all()
+        print(f"Resultados encontrados: {len(nivel1)}")
+
+        return [
+            {
+                "id": n.id,
+                "nombre": n.nombre,
+                "email": n.email,
+                "nivel": n.nivel
+            }
+            for n in nivel1
+        ]
+
+    except Exception as e:
+        print(f"Error en la consulta: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 @router.post("/recover/")
 async def recover_password(
         email_data: schemas.EmailSchema,

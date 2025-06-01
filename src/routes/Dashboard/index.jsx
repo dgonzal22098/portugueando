@@ -1,6 +1,6 @@
 import styled from "styled-components"
-import {InputLabel, MenuItem, FormControl, Select, TextField, Box, useMediaQuery, useTheme} from '@mui/material';
-import { useState } from "react";
+import {InputLabel, MenuItem, FormControl, Select, TextField, Box, useMediaQuery, useTheme, FormHelperText } from '@mui/material';
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { MdDelete as DeleteIcon } from "react-icons/md";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -13,304 +13,316 @@ import Tooltip from '@mui/material/Tooltip';
 import ModalConfirmation from "./ModalConfirmation";
 import {device} from "../../Breakpoints/breakpoints.js";
 
+
 // Main de dashboard
 // Rol: Estudiante
 // Logica: Se debe traer el semestre actual del estudiante y mostrar los grupos que tiene asignados.
-
 const Dashboard = () => {
 
-    const initialFormState = {
-        nivel: "",
-        profesor: "",
-        horario: "",
-        redaccion: "",
-        corte: ""
-    };
+    const [students, setStudents] = useState([]);
     const [formState, setFormState] = useState(initialFormState);
-    const [caracterSeleccionado, setCaracterSeleccionado] = useState("");
-    const [valorNumero, setValorNumero] = useState(0);
-    const [caracterizaciones, setCaracterizaciones] = useState([]);
     const [showModalConfirmation, setShowModalConfirmation] = useState(false);
+    const [formErrors, setFormErrors] = useState({});
     const theme = useTheme();
     const isTablet = useMediaQuery(theme.breakpoints.down('md'));
-    const isMobile = useMediaQuery(device.mobile);
 
-
-    const handleDelete = (indexToRemove) => {
-        setCaracterizaciones((prev) =>
-            prev.filter((_, index) => index !== indexToRemove)
-        );
+    const initialFormState = {
+        nome: "",
+        nivel: "",
+        profe: "",
+        email: "",
+        semestre: "",
+        horario: "",
+        redacao: "",
+        cote: "",
+        ss: "",
+        c: "",
+        rr: "",
+        x: "",
+        s: "",
+        agrave: "",
+        aagudo: "",
+        acircunflexo: "",
+        till: "",
+        vregulares: "",
+        virregulares: "",
+        genero: "",
+        numero: "",
+        virgula: "",
+        pcontinuo: "",
+        pparagrafo: "",
+        pvergula: "",
+        reticencias: "",
+        pinterrogacao: "",
+        pexclamacao: "",
+        travessao: "",
+        aspas: "",
+        parenteses: "",
+        usualidade: "",
+        portunhol: "",
+        extraterrestres: "",
+        rinadecuadas: "",
+        ausenciaa: "",
+        excesso: "",
+        order: ""
     };
-    const handleDeleteAll = () => {
-        setCaracterizaciones([]);
-    };
-
-    const handleAgregarCaracter = () => {
-        if (!caracterSeleccionado || valorNumero <= 0) return;
-
-        setCaracterizaciones(prev => [
-            ...prev,
-            { caracter: caracterSeleccionado, cantidad: valorNumero }
-        ]);
-
-        // Resetear campos
-        setCaracterSeleccionado("");
-        setValorNumero(0);
-    };
 
 
-    const handleChangeNumero = (event) => {
-        const rawValue = event.target.value;
 
-        // Permitir campo vacío (mientras escribe)
-        if (rawValue === "") {
-            setValorNumero("");
-            return;
+
+    const fetchStudents = useCallback(async () => {
+        try {
+            console.log("Iniciando fetch...");
+            const response = await fetch('http://localhost:8000/main/nivel/2/3');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            console.log("Datos recibidos:", data);
+            if (Array.isArray(data)) {
+                setStudents(data);
+            }
+        } catch (error) {
+            console.error("Error fetching students:", error);
+            setStudents([]);
         }
+    }, []);
 
-        // Convertir a número eliminando ceros iniciales
-        const numericValue = parseInt(rawValue, 10);
 
-        // Validar que sea un número
-        if (!isNaN(numericValue)) {
-            setValorNumero(numericValue);
-        }
-    };
+    useEffect(() => {
+        fetchStudents();
+    }, [fetchStudents]);
 
-    const handleChangeCaracter = (event) => {
-        setCaracterSeleccionado(event.target.value);
-    };
 
-    const handleChange = (event) => {
+    const handleChange = useCallback((event) => {
         const { name, value } = event.target;
-        setFormState((prev) => ({ ...prev, [name]: value }));
-    };
+        if (name === "nome") {
+            const selectedStudent = students.find(s => s.nombre === value);
+            if (selectedStudent) {
+                setFormState(prev => ({
+                    ...prev,
+                    nome: value,
+                    email: selectedStudent.email,
+                    nivel: selectedStudent.nivel?.toString() || ""
+                }));
+            }
+        } else {
+            setFormState(prev => ({
+                ...prev,
+                [name]: value
+            }));
+            if (value && formErrors[name]) {
+                setFormErrors(prev => ({ ...prev, [name]: "" }));
+            }
+        }
+    }, [students, formErrors]);
 
-  return (
-      <>
+    const validateForm = useCallback(() => {
+        const errors = {};
+        let isValid = true;
+
+        fullConfig.forEach(field => {
+            const value = formState[field.name];
+            if (!value && value !== 0) {
+                errors[field.name] = "Este campo es obligatorio";
+                isValid = false;
+            }
+            if (field.type === "number" && value !== "") {
+                const numValue = Number(value);
+                if (numValue > 10 || numValue < 0) {
+                    errors[field.name] = "El valor debe estar entre 0 y 10";
+                    isValid = false;
+                }
+            }
+        });
+
+        setFormErrors(errors);
+        return isValid;
+    }, [fullConfig, formState]);
+
+
+    const fullConfig = useMemo(() => [
+        {
+            label: "Nome",
+            name: "nome",
+            options: students.map(student => student.nombre || ""),
+            type: "select"
+        },
+        {
+            label: "E-mail",
+            name: "email",
+            options: students.map(student => student.email || ""),
+            type: "select"
+        },
+        {
+            label: "Nível",
+            name: "nivel",
+            options: students.map(student => student.nivel?.toString() || ""),
+            type: "select"
+        },
+        ...selectsConfig.slice(3)
+    ], [students]);
+
+    const handleSubmit = useCallback(() => {
+        if (validateForm()) {
+            setShowModalConfirmation(true);
+        }
+    }, [validateForm]);
+
+
+    return (
         <Container>
             <h1 style={{fontSize: "3rem", marginBottom:"2rem"}}>Dashboard</h1>
             <h2>Caracterización escrita 2025-1</h2>
+            <p>Rellena tus datos personales y el detalle del nivel en el que te encuentras e indica el número de errores en cada uno de los aspectos que se indican a continuación:</p>
 
-            <p>Rellena tus datos personales y el detalle del nivel en el que te encuentras e indica el número de errores en cada uno de los aspectos que se indican a continuación:
-            </p>
             <Campos>
-                {selectsConfig.map(({label,name, options}) => (
+                {fullConfig.map(({label, name, options, type}) => (
                     <FormControl
                         key={name}
                         fullWidth
                         sx={{
                             m: 1,
-                            minWidth: 120 ,
+                            minWidth: 120,
                             maxWidth: isTablet ? "100%" : "45%",
                             bgcolor: "white",
-                            zIndex:"0"
-                    }}>
-
-                            <InputLabel id={`${name}-label`}>{label}</InputLabel>
-                            <Select
-                                labelId={`${name}-label`}
-                                id={name}
+                            zIndex: "0"
+                        }}
+                    >
+                        {type === "number" ? (
+                            <TextField
+                                label={label}
+                                type="number"
                                 name={name}
                                 value={formState[name]}
-                                label={label}
                                 onChange={handleChange}
-                            >
-                                {options.map((option,index) => (
-                                    <MenuItem key={index} value={option}>{option}</MenuItem>
-                                ))}
-
-                            </Select>
-
+                                InputProps={{
+                                    inputProps: {
+                                        min: 0,
+                                        max: 10,
+                                        step: 1
+                                    }
+                                }}
+                                variant="outlined"
+                                error={!!formErrors[name]}
+                                helperText={formErrors[name]}
+                            />
+                        ) : (
+                            <>
+                                <InputLabel id={`${name}-label`}>{label}</InputLabel>
+                                <Select
+                                    labelId={`${name}-label`}
+                                    id={name}
+                                    name={name}
+                                    value={formState[name]}
+                                    label={label}
+                                    onChange={handleChange}
+                                    error={!!formErrors[name]}
+                                >
+                                    <MenuItem value="">
+                                        <em>Seleccione una opción</em>
+                                    </MenuItem>
+                                    {options.map((option, index) => (
+                                        <MenuItem key={index} value={option}>
+                                            {option}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                                {formErrors[name] && (
+                                    <FormHelperText error>{formErrors[name]}</FormHelperText>
+                                )}
+                            </>
+                        )}
                     </FormControl>
                 ))}
-
             </Campos>
 
-            <ContentCampos>
-                <h3 className="mainTitle">Agregar registros</h3>
-
-                <div className="contentNewRegistros">
-
-                    {/* columna 1 - ingreso de datos */}
-
-                    <div className="agregarCaracterizacion">
-                        <FormControl
-                            fullWidth
-                            sx={{
-                                minWidth: 100 ,
-                                maxWidth: "80%",
-                                bgcolor: "white"}}
-                        >
-
-                            <InputLabel
-                                id="caracter-label"
-                            >Agregar un nuevo caracter</InputLabel>
-                            <Select
-                                labelId="caracter-label"
-                                id="caracter"
-                                name="caracter"
-                                value={caracterSeleccionado}
-                                label="Agregar un nuevo caracter"
-                                onChange={handleChangeCaracter}
-                            >
-                                {caracteresPortugues.map((name, index) => (
-                                    <MenuItem
-                                        key={index}
-                                        value={name}
-                                    >{name}</MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                        <Box
-                            sx={{
-                                m: 1,
-                                minWidth: 120,
-                                maxWidth: "80%",
-                                bgcolor: "white"
-                        }}>
-                            <TextField
-                                label="Cantidad"
-                                type="number"
-                                value={valorNumero}
-                                onChange={handleChangeNumero}
-                                fullWidth
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                                inputProps={{
-                                    min: 0, // valor mínimo opcional
-                                    max: 10000, // valor máximo opcional
-                                }}
-                            />
-                        </Box>
-                        <div
-                            className="buttonCont"
-                            style={{
-                                width: "50%",
-                                display: "flex",
-                                justifyContent: "flex-start",
-                                alignItems: "center",
-                                marginTop: "1rem"
-                            }}
-                        >
-                            <Button className="agregar" onClick={handleAgregarCaracter}>Agregar</Button>
-                        </div>
-                    </div>
-
-                    {/* columna 2 - resultados */}
-
-                    <div className="newContentContainer">
-                       <TableContainer
-                           component={Paper}
-                           sx={{
-                               padding: isMobile ? 0 : "1rem",
-                               margin: isMobile ? 0 : "1rem",
-                           }}
-                       >
-                           <Table sx={{
-                               minWidth: isMobile ? 100 : 200,
-                           }} size="small" aria-label="a dense table">
-                               <TableHead>
-                                   <TableRow>
-                                       <TableCell sx={{fontWeight:"bold", fontSize:"1rem"}}>Caracter</TableCell>
-                                       <TableCell align="right" sx={{fontWeight:"bold", fontSize:"1rem"}}>Cantidad</TableCell>
-                                       <TableCell align="right"></TableCell>
-                                   </TableRow>
-                               </TableHead>
-                               <TableBody>
-                                   {caracterizaciones.map((row, index) => (
-                                       <TableRow key={index}
-                                                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                           <TableCell component="th" scope="row">
-                                               {row.caracter}
-                                           </TableCell>
-                                           <TableCell align="right">{row.cantidad}</TableCell>
-                                           <TableCell align="right" sx={{ display: "flex", justifyContent: "center", alignItems: "center"}}>
-                                               <TableCell>
-                                                   <Tooltip title="Eliminar" arrow placement="right">
-                                                        <StyledDeleteIcon onClick={() => handleDelete(index)}/>
-                                                   </Tooltip>
-                                               </TableCell>
-
-                                           </TableCell>
-
-                                       </TableRow>
-                                   ))}
-                               </TableBody>
-                           </Table>
-                       </TableContainer>
-
-                    </div>
-
-                </div>
-
-            </ContentCampos>
-
             <ButtonGroup>
-
-                <Button className="submit" onClick={() => setShowModalConfirmation(true)}>Enviar</Button>
-
-                <Button className=" submit cancel" onClick={() => {
-                    setFormState(initialFormState);
-                    handleDeleteAll();
-                }}>Borrar todo</Button>
-
+                <Button className="submit" onClick={handleSubmit}>
+                    Enviar
+                </Button>
+                <Button className="submit cancel" onClick={() => setFormState(initialFormState)}>
+                    Borrar todo
+                </Button>
             </ButtonGroup>
 
-
-
-            {showModalConfirmation &&
-                <ModalConfirmation setShowModalConfirmation={setShowModalConfirmation}
-                                   caracterizaciones={caracterizaciones}
-                                    formState={formState}
-                />}
+            {showModalConfirmation && (
+                <ModalConfirmation
+                    setShowModalConfirmation={setShowModalConfirmation}
+                    formState={formState}
+                />
+            )}
         </Container>
-      </>
-  )
-}
+    );
+};
 
-export default Dashboard
+export default Dashboard;
 
-const caracteresPortugues = [
-    "RR", "SS", "X", "Ç", "Ó", "Ê", "Ã", "Â",
-    "Á", "À", "É", "Í", "Ô", "Ú", "Ü", "Ñ"
-];
-const nivelesEjemplo = [
-    1,3,4,5,6
+
+const a = [
+    1
 ]
-const profesoresRegistrados = [
-    "María Gómez",
-    "Carlos Rodríguez",
-    "Lucía Fernández",
-    "Andrés Martínez",
-    "Sofía Ramírez",
-    "Pedro Torres"
+const b = [
+    "María Gómez"
 ];
-const horariosPortugues = [
-    "08:00 - 10:00",
-    "10:00 - 12:00",
-    "13:00 - 15:00",
-    "15:00 - 17:00",
-    "17:00 - 19:00",
-    "19:00 - 21:00"
+const c = [
+    "08:00 - 10:00"
 ];
-const tiposRedaccion = [
-    "Ensayo",
-    "Carta formal",
-    "Correo electrónico",
-    "Resumen",
-    "Narración",
-    "Descripción"
+const d = [
+    "Ensayo"
 ];
-const cortesNivel = [1, 2, 3, 4];
+const e = [
+    1
+];
+const f = [
+    "María Gómez"
+];
+const g = [
+    "08:00 - 10:00"
+];
+const h = [
+    "Ensayo"
+];
+
 const selectsConfig = [
-    { label: "Nivel", name: "nivel", options: nivelesEjemplo },
-    { label: "Profesor", name: "profesor", options: profesoresRegistrados },
-    { label: "Horario", name: "horario", options: horariosPortugues },
-    { label: "Redacción", name: "redaccion", options: tiposRedaccion },
-    { label: "Corte", name: "corte", options: cortesNivel }
+    { label: "Professor(a)", name: "profesor", options: c },
+    { label: "Ano-Semestre", name: "semestre ", options: e },
+    { label: "Horário", name: "horario", options: f },
+    { label: "Tipo de Redação", name: "redacao", options: g },
+    { label: "Corte", name: "corte", options: h },
+    { label: "SS", name: "ss", type: "number" },
+    { label: "Ç", name: "c", type: "number" },
+    { label: "RR", name: "rr", type: "number" },
+    { label: "X", name: "x", type: "number" },
+    { label: "S", name: "s", type: "number" },
+    { label: "Acento grave (À)", name: "agrave", type: "number" },
+    { label: "Acento agudo (Á, É, Í, Ó, Ú)", name: "aagudo", type: "number" },
+    { label: "Acento circunflexo", name: "acircunflexo", type: "number" },
+    { label: "Til (~)", name: "till", type: "number" },
+    { label: "Verbos Regulares", name: "vregulares", type: "number" },
+    { label: "Verbos Irregulares", name: "virregulares", type: "number" },
+    { label: "Gênero (Masculino-Feminino)", name: "genero", type: "number" },
+    { label: "Número (Singular-Plural)", name: "numero", type: "number" },
+    { label: "Vírgula", name: "virgula", type: "number" },
+    { label: "Ponto continuativo", name: "pcontinuo", type: "number" },
+    { label: "Ponto parágrafo", name: "pparagrafo", type: "number" },
+    { label: "Ponto e vírgula", name: "pvergula", type: "number" },
+    { label: "Reticências", name: "reticencias", type: "number" },
+    { label: "Ponto de interrogação", name: "pinterrogacao", type: "number" },
+    { label: "Ponto de exclamação", name: "pexclamacao", type: "number" },
+    { label: "Travessão", name: "travessao", type: "number" },
+    { label: "Aspas", name: "aspas", type: "number" },
+    { label: "Parênteses", name: "parenteses", type: "number" },
+    { label: "Usualidade", name: "usualidade", type: "number" },
+    { label: "Portunhol", name: "portunhol", type: "number" },
+    { label: "Extraterrestres", name: "extraterrestres", type: "number" },
+    { label: "Repetições inadequadas", name: "rinadecuadas", type: "number" },
+    { label: "Ausência", name: "ausenciaa", type: "number" },
+    { label: "Excesso", name: "excesso", type: "number" },
+    { label: "Ordem", name: "order", type: "number" }
 ];
+
+
 
 const Container = styled.div`
     padding: 2.5rem;

@@ -6,11 +6,20 @@ from sqlalchemy.orm import relationship
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(String(20), primary_key=True, index=True)
-    name = Column(String(100), index=True)
-    email = Column(String(100), unique=True, index=True)
-    hashed_password = Column(String(100))
-    is_active = Column(Boolean, default=True)
-    rol = Column(String(100), index=True)
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(50), nullable=False)
+    email = Column(String(50), nullable=False, unique=True)
+    hashed_password = Column(String(50), nullable=False)
+    estado = Column(Integer, nullable=False)
+    rol = Column(String(20), nullable=False)
 
+
+class Nivel(Base):
+    __tablename__ = "nivel"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String(50), index=True)
+    email = Column(String(50), index=True)
+    nivel = Column(Integer, index=True)
+    grupo = Column(Integer, index=True)
 

@@ -1,3 +1,3 @@
-from .schemas import UserBase, UserCreate, UserLogin, User, EmailSchema, ResetPasswordSchema
+from .schemas import UserBase, UserCreate, User, UserLogin, UserProf
 
-
+__all__ = ["UserBase", "UserCreate", "User", "UserLogin", "UserProf"]

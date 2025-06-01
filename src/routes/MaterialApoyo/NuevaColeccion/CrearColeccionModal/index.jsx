@@ -12,22 +12,51 @@ import {device} from "../../../../Breakpoints/breakpoints"
 // Bug: al dar click al boton subir se cierra el modal. no deberia
 
 const CrearColeccionModal = ({ setShowCrearColeccion }) => {
-    const [nombre, setNombre] = useState('');
-    const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
-    const [categoriasSeleccionadas, setCategoriasSeleccionadas] = useState([]);
 
-    const handleAgregarCategoria = () => {
-        if (
-            categoriaSeleccionada &&
-            !categoriasSeleccionadas.includes(categoriaSeleccionada)
-        ) {
-            setCategoriasSeleccionadas([...categoriasSeleccionadas, categoriaSeleccionada]);
-            setCategoriaSeleccionada("");
+    const [categoriaInput, setCategoriaInput] = useState("");
+    const [coleccion, setColeccion] = useState({
+        nombre:"",
+        categorias:[],
+        imagen: null,
+    });
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file){
+            setColeccion({...coleccion, imagen: file});
         }
+    }
+    const handleAgregarCategoria = () => {
+        const categoria = categoriaInput.trim();
+        if (
+            categoria &&
+            !coleccion.categorias.includes(categoria)
+        ) {
+            setColeccion({
+                ...coleccion,
+                categorias: [...coleccion.categorias, categoria],
+            });
+        }
+        setCategoriaInput("");
     };
-    const handleEliminarCategoria = (categoria) => {
-        setCategoriasSeleccionadas(categoriasSeleccionadas.filter(cat => cat !== categoria));
+
+    const handleEliminarCategoria = (cat) => {
+        setColeccion({
+            ...coleccion,
+            categorias: coleccion.categorias.filter((c) => c !== cat),
+        })
     };
+
+    const handleConfirmar = () => {
+        const {nombre, categorias} = coleccion;
+
+        if (!nombre || !categorias) {
+            alert('Alguns campos são obrigatórios.');
+            return;
+        }
+
+        setShowCrearColeccion(false);
+    }
 
 
     return (
@@ -42,9 +71,10 @@ const CrearColeccionModal = ({ setShowCrearColeccion }) => {
                 <div className="optionsContainer">
                     <TextField
                         label="Nombre de la colección"
-                        value={nombre}
-                        onChange={(e) => setNombre(e.target.value)}
+                        value={coleccion.nombre}
+                        onChange={(e) => setColeccion({...coleccion, nombre: e.target.value})}
                         fullWidth
+                        required
                     />
 
                     <div className="uploadImage">
@@ -58,29 +88,35 @@ const CrearColeccionModal = ({ setShowCrearColeccion }) => {
                                 type="file"
                                 accept="image/*"
                                 style={{display: "none"}}
-                                onClick={() => setShowCrearColeccion(false)}
-                                onChange=""
+                                onChange={handleImageUpload}
                             />
                         </StyledButton>
                     </div>
 
                     <div className="categoryContainer">
 
-                        <Select
-                            value={categoriaSeleccionada}
-                            onChange={(e) => setCategoriaSeleccionada(e.target.value)}
-                        >
-                            <option value="" disabled>Selecciona una categoría</option>
+                        <TextField
+                            required
+                            label="Agregar categoría"
+                            value={categoriaInput}
+                            onChange={(e) => setCategoriaInput(e.target.value)}
+                            list="categoria-sugerencias"
+                            InputProps={{ inputProps: { list: "categoria-sugerencias" } }}
+                            sx={{ width: "68%" }}
+                        />
+
+                        <datalist id="categoria-sugerencias">
                             {categorias.map((cat, index) => (
-                                <option key={index} value={cat}>{cat}</option>
+                                <option key={index} value={cat} />
                             ))}
-                        </Select>
+                        </datalist>
+
                         <Button onClick={handleAgregarCategoria} className="agregarCat">Agregar</Button>
 
                     </div>
 
                     <ChipsContainer>
-                        {categoriasSeleccionadas.map((cat, index) => (
+                        {coleccion.categorias.map((cat, index) => (
                             <Chip key={index}>
                                 {cat}
                                 <DeleteButton onClick={() => handleEliminarCategoria(cat)}>×</DeleteButton>
@@ -91,7 +127,7 @@ const CrearColeccionModal = ({ setShowCrearColeccion }) => {
 
 
                 <ButtonGroup>
-                    <Button onClick={() => setShowCrearColeccion(false)}>Confirmar</Button>
+                    <Button onClick={handleConfirmar}>Confirmar</Button>
                     <Button className="cerrar" onClick={() => setShowCrearColeccion(false)}>Cancelar</Button>
                 </ButtonGroup>
 

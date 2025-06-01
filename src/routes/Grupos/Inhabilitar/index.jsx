@@ -1,11 +1,20 @@
 import styled from "styled-components"
 import { IoClose } from "react-icons/io5";
+import {useState} from "react";
 
 // Modal de confirmacion, si desea inhabilitar el grupo.
 // Rol: Administrador
 // Logica: Inhabilitar un grupo, se envia a la base de datos el nuevo estado del grupo. Inahibilita automaticamente a los que tengan acceso a este grupo.
 
 const Inhabilitar = ({setShowInhabilitar}) => {
+
+    const [inhabilitar, setInhabilitar] = useState(false);
+
+    const handleChange = () => {
+        setInhabilitar(true);
+        setShowInhabilitar(false);
+
+    }
 
     return (
         <ModalBackdrop onClick={() => setShowInhabilitar(false)}>
@@ -17,7 +26,7 @@ const Inhabilitar = ({setShowInhabilitar}) => {
 
                 <ModalButtons>
 
-                    <Confirm >Sí, inhabilitar</Confirm>
+                    <Confirm onClick={handleChange}>Sí, inhabilitar</Confirm>
 
                     <Cancel onClick={() => setShowInhabilitar(false)} >Cancelar</Cancel>
 

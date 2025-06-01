@@ -25,7 +25,6 @@ const InformativeCard = ({usuario}) => {
           <DataHeader>
             <p>Nombre: {usuario.nombre}</p>
             <p>Correo: {usuario.email}</p>
-            <p>Cédula: {usuario.cedula}</p>
             <p>Fecha de inscripción: {usuario.fecha_nac}</p>
           </DataHeader>
         </Primero>

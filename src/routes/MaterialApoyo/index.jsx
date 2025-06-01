@@ -12,7 +12,6 @@ import {device} from "../../Breakpoints/breakpoints"
 // Modulo de las colecciones disponibles
 // Rol: Profesor, Estudiante
 // Logica: El modulo trae las colecciones creadas por el docente para cierto grupo, el cual esta disponible tambien para los estudiantes, la otra funcionalidad necesaria en este modulao es la de enviar la informacion de la coleccion nueva a la base de datos.
-// Pendiente: Agregar el input de una imagen que el profesor quiera poner en la coleccion o si prefiere con la imagen por defecto.
 // Pendiente: Implementar la logica de buscar dentro de los titulos ya sea con palabras claves o con el nombre de la coleccion.
 
 const MaterialApoyo = () => {
@@ -21,7 +20,7 @@ const MaterialApoyo = () => {
     const [showColectionContent, setShowColectionContent] = useState(false);
     const [selectedColection, setSelectedColection] = useState(null);
     const [colectionName, setColectionName] = useState("");
-
+    const [searchWord, setSearchWord] = useState("");
 
 
     return (
@@ -30,9 +29,16 @@ const MaterialApoyo = () => {
         <MainTitle>Material de apoyo - colecciones</MainTitle>
 
         <SearchContainer>
-            <TextField id="outlined-basic" label="Buscar aqui..." variant="outlined" style={SearchBoxStyle} sx={{borderRadius:"5px"}}>
-            </TextField>
-            <CiSearch className="SearchIcon"/>
+            <TextField
+                id="outlined-basic"
+                label="Buscar aqui..."
+                variant="outlined"
+                style={SearchBoxStyle}
+                sx={{borderRadius:"5px"}}
+                value={searchWord}
+                onChange={(e) => setSearchWord(e.target.value)}
+            />
+            <CiSearch className="SearchIcon" />
         </SearchContainer>
 
         {showColection && <ColectionContainer>

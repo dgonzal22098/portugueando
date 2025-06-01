@@ -28,8 +28,6 @@ const ModalStudentComp = ({setShowStudentModal, studentInfo, setShowStudentForm}
                 <ul style={{ textAlign: "left", margin:"3rem" }}>
                     <li><strong>Nombre:</strong> {studentInfo.fullName}</li>
                     <li><strong>Correo:</strong> {studentInfo.email}</li>
-                    <li><strong>Cédula:</strong> {studentInfo.id}</li>
-                    <li><strong>Fecha de nacimiento:</strong> {studentInfo.dob}</li>
                 </ul>
 
                 <ModalButtons>

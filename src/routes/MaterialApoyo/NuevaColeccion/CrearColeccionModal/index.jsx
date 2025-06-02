@@ -3,6 +3,7 @@ import { IoClose } from "react-icons/io5";
 import { TextField } from "@mui/material";
 import { useState } from "react";
 import {device} from "../../../../Breakpoints/breakpoints"
+import axios from 'axios';
 
 // Modal de crear una coleccion nueva
 // Rol: Profesor
@@ -47,16 +48,43 @@ const CrearColeccionModal = ({ setShowCrearColeccion }) => {
         })
     };
 
-    const handleConfirmar = () => {
-        const {nombre, categorias} = coleccion;
+    const handleConfirmar = async () => {
+        const { nombre, categorias, imagen } = coleccion;
 
-        if (!nombre || !categorias) {
-            alert('Alguns campos são obrigatórios.');
+        if (!nombre || categorias.length === 0) {
+            alert('Todos los campos marcados con * son obligatorios.');
             return;
         }
 
-        setShowCrearColeccion(false);
-    }
+        try {
+            // Crear un FormData para enviar la imagen y datos
+            const formData = new FormData();
+            formData.append('nombre', nombre);
+
+            // Añadir la primera categoría (para coincidir con el backend)
+            formData.append('categoria', categorias[0]);
+
+            // Añadir la imagen si existe (opcional)
+            if (imagen) {
+                formData.append('imagen', imagen);
+            }
+
+            // Enviar al backend
+            await axios.post('http://localhost:8000/main/material_apoyo/', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            alert('Colección creada exitosamente');
+            setShowCrearColeccion(false);
+        } catch (error) {
+            console.error('Error al crear la colección:', error);
+            alert('Error al crear la colección. Por favor, intente nuevamente.');
+        }
+    };
+
+
 
 
     return (

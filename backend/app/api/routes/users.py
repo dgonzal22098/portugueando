@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Cookie, Response, HTTPException
 from sqlalchemy.orm import Session
+
 from sqlalchemy import text
 from typing import List
 from ...database import get_db
@@ -7,6 +8,7 @@ from ... import schemas, crud, models
 from fastapi.responses import JSONResponse
 import jwt
 import time
+
 from app.schemas.schemas import EstudianteNivel
 import json
 from itsdangerous import URLSafeSerializer, BadSignature
@@ -19,6 +21,16 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
+
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from sqlalchemy.orm import Session
+from typing import List
+import base64
+
+
+from typing import Optional
+
+import logging
 
 
 router = APIRouter()

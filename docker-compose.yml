@@ -54,7 +54,6 @@ services:
     build:
       context: .
       dockerfile: dockerfile
-    container_name: frontend_puto
     ports:
       - "5173:5173"
     volumes:
@@ -113,4 +112,3 @@ networks:
 volumes:
     db_data:
     node_modules:
-

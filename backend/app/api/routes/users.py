@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 import jwt
 import time
 
-from app.schemas.schemas import EstudianteNivel
+from ...schemas.schemas import EstudianteNivel
 import json
 from itsdangerous import URLSafeSerializer, BadSignature
 
@@ -25,12 +25,11 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import List
-import base64
+
 
 
 from typing import Optional
 
-import logging
 
 
 router = APIRouter()
@@ -346,3 +345,26 @@ async def reset_password(
     del password_reset_tokens[token]
 
     return {"message": "Contraseña actualizada correctamente"}
+
+@router.post("/main/material_apoyo/", response_model=schemas.Coleccion)
+async def crear_coleccion(
+        nombre: str = Form(...),
+        categoria: str = Form(...),
+        db: Session = Depends(get_db)
+):
+    coleccion_data = schemas.ColeccionCreate(nombre=nombre, categoria=categoria)
+    return crud.create_coleccion(db=db, coleccion=coleccion_data)
+
+@router.post("/api/colecciones", response_model=schemas.Coleccion)
+async def crear_coleccion(
+    coleccion: schemas.ColeccionCreate,
+    db: Session = Depends(get_db)
+):
+    return crud.create_coleccion(db=db, coleccion=coleccion)
+
+@router.get("/api/colecciones", response_model=List[schemas.Coleccion])
+def read_colecciones(db: Session = Depends(get_db)):
+    colecciones = crud.get_colecciones(db)
+    if not colecciones:
+        raise HTTPException(status_code=404, detail="No hay colecciones registradas.")
+    return colecciones

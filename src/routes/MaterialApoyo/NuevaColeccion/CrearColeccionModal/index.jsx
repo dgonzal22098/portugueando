@@ -17,16 +17,8 @@ const CrearColeccionModal = ({ setShowCrearColeccion }) => {
     const [categoriaInput, setCategoriaInput] = useState("");
     const [coleccion, setColeccion] = useState({
         nombre:"",
-        categorias:[],
-        imagen: null,
+        categorias:[]
     });
-
-    const handleImageUpload = (e) => {
-        const file = e.target.files[0];
-        if (file){
-            setColeccion({...coleccion, imagen: file});
-        }
-    }
     const handleAgregarCategoria = () => {
         const categoria = categoriaInput.trim();
         if (
@@ -49,7 +41,7 @@ const CrearColeccionModal = ({ setShowCrearColeccion }) => {
     };
 
     const handleConfirmar = async () => {
-        const { nombre, categorias, imagen } = coleccion;
+        const { nombre, categorias } = coleccion;
 
         if (!nombre || categorias.length === 0) {
             alert('Todos los campos marcados con * son obligatorios.');
@@ -57,17 +49,12 @@ const CrearColeccionModal = ({ setShowCrearColeccion }) => {
         }
 
         try {
-            // Crear un FormData para enviar la imagen y datos
+            // Crear un FormData para enviar los datos
             const formData = new FormData();
             formData.append('nombre', nombre);
 
-            // Añadir la primera categoría (para coincidir con el backend)
-            formData.append('categoria', categorias[0]);
-
-            // Añadir la imagen si existe (opcional)
-            if (imagen) {
-                formData.append('imagen', imagen);
-            }
+            // Convertir el array de categorías a un string separado por comas
+            formData.append('categoria', categorias.join(', '));
 
             // Enviar al backend
             await axios.post('http://localhost:8000/main/material_apoyo/', formData, {
@@ -83,9 +70,6 @@ const CrearColeccionModal = ({ setShowCrearColeccion }) => {
             alert('Error al crear la colección. Por favor, intente nuevamente.');
         }
     };
-
-
-
 
     return (
         <Overlay onClick={() => setShowCrearColeccion(false)}>
@@ -104,22 +88,6 @@ const CrearColeccionModal = ({ setShowCrearColeccion }) => {
                         fullWidth
                         required
                     />
-
-                    <div className="uploadImage">
-                        <p>Imagen de la colección (opcional)</p>
-                        <StyledButton>
-                            <label htmlFor="uploadInput">
-                                Subir
-                            </label>
-                            <input
-                                id="uploadInput"
-                                type="file"
-                                accept="image/*"
-                                style={{display: "none"}}
-                                onChange={handleImageUpload}
-                            />
-                        </StyledButton>
-                    </div>
 
                     <div className="categoryContainer">
 

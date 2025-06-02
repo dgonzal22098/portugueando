@@ -51,3 +51,24 @@ class EstudianteNivel(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ContenidoBase(BaseModel):
+    titulo: str
+    fecha: str
+    etiquetas: str
+
+class ColeccionBase(BaseModel):
+    nombre: str
+    categoria: str  # Ahora es un string, no una lista
+    contenidos: str
+
+
+class ColeccionCreate(ColeccionBase):
+    pass
+
+
+class Coleccion(ColeccionBase):
+    id: int
+
+    class Config:
+        from_attributes = True

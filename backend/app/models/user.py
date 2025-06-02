@@ -1,5 +1,7 @@
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey
 from ..database import Base
+from sqlalchemy import DateTime
+from datetime import datetime
 from sqlalchemy.orm import relationship
 
 
@@ -24,5 +26,12 @@ class Nivel(Base):
     hora = Column(String(50), index=True)
     nivel = Column(Integer, index=True)
     grupo = Column(Integer, index=True)
+
+class Coleccion(Base):
+    __tablename__ = "colecciones"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String(100), nullable=False)
+    categoria = Column(String(255), nullable=False)
 
 

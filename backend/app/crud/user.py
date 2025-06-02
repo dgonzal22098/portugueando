@@ -38,3 +38,19 @@ def update_user_password(db: Session, user_id: int, new_password: str):
         db.commit()
         return user
     return None
+
+def create_coleccion(db: Session, coleccion: schemas.ColeccionCreate):
+    # Solución temporal: crear un diccionario con solo los campos que existen en la base de datos
+    coleccion_dict = {
+        "nombre": coleccion.nombre,
+        "categoria": coleccion.categoria
+    }
+    # Usar el diccionario para crear la instancia de Coleccion
+    db_coleccion = models.Coleccion(**coleccion_dict)
+    db.add(db_coleccion)
+    db.commit()
+    db.refresh(db_coleccion)
+    return db_coleccion
+
+def get_colecciones(db: Session):
+    return db.query(models.Coleccion).all()

@@ -1,15 +1,14 @@
-from fastapi import APIRouter, Depends, Cookie, Response, HTTPException
+from fastapi import Cookie, Response
 from sqlalchemy.orm import Session
-from typing import List
+
 from ...database import get_db
 from ... import schemas, crud, models
-from fastapi.responses import JSONResponse
+
 import jwt
 import time
-import json
+
 from itsdangerous import URLSafeSerializer, BadSignature
 
-from typing import Optional
 from fastapi import BackgroundTasks
 from fastapi.responses import JSONResponse
 import secrets
@@ -17,6 +16,16 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
+
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from sqlalchemy.orm import Session
+from typing import List
+import base64
+
+
+from typing import Optional
+
+import logging
 
 
 router = APIRouter()
@@ -264,35 +273,6 @@ def read_students(nivel_id: int, grupo_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         print(f"Error en la consulta: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-@router.post("/recover/")
-async def recover_password(
-        email_data: schemas.EmailSchema,
-        background_tasks: BackgroundTasks,
-        db: Session = Depends(get_db)
-):
-    user = crud.get_user(db, email=email_data.email)
-    if not user:
-        # Para prevenir enumeración de usuarios, devolvemos siempre el mismo mensaje
-        return {
-            "message": "Si el correo existe en nuestra base de datos, recibirás un enlace para restablecer tu contraseña."}
-
-    # Generar token único
-    token = secrets.token_urlsafe(32)
-    expiry = datetime.now() + timedelta(minutes=30)
-
-    # Guardar token (en producción usar base de datos)
-    password_reset_tokens[token] = {
-        "email": user.email,
-        "expiry": expiry
-    }
-
-    # Enviar correo en segundo plano
-    background_tasks.add_task(send_password_reset_email, user.email, token)
-
-    return {
-        "message": "Si el correo existe en nuestra base de datos, recibirás un enlace para restablecer tu contraseña."}
-
-
 @router.post("/reset-password/")
 async def reset_password(
         reset_data: schemas.ResetPasswordSchema,

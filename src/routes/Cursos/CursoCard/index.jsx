@@ -24,12 +24,7 @@ const CursoCard = ({value, toGroups, setShowCrearGrupoModal}) => {
     return (
     <Container>
         <h3 style={{marginBottom:"1rem"}}>{value}</h3>
-        
-        <InfoCont>
-            <p>Grupos creados: 1</p>
-            <p>Grupos activos: 1</p>
-            <p>Grupos inactivos: 1</p>
-        </InfoCont>
+
 
         {role === "Profesor" ? (
             <ButtonGroup>

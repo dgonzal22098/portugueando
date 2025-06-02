@@ -8,9 +8,7 @@ from ... import schemas, crud, models
 from fastapi.responses import JSONResponse
 import jwt
 import time
-
-from app.schemas.schemas import EstudianteNivel
-import json
+from ...schemas.schemas import EstudianteNivel
 from itsdangerous import URLSafeSerializer, BadSignature
 
 from typing import Optional
@@ -23,11 +21,10 @@ from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from sqlalchemy.orm import Session
 from typing import List
 import base64
-
-
+from ...models.user import User
+from ...schemas.schemas import UserProf
 from typing import Optional
 
 import logging
@@ -236,23 +233,58 @@ async def reset_password(
     return {"message": "Contraseña actualizada correctamente"}
 
 # app/routers/users.py
-@router.get("/main/registro_profesor/", response_model=List[dict])
+@router.get("/main/registro_profesor/", response_model=List[schemas.UserProf])
 def read_profesores(db: Session = Depends(get_db)):
     try:
-        profesores = db.query(models.User).filter(
-            models.User.rol == "Profesor"
-        ).all()
+        # Ejecutar consulta
+        profesores = db.execute(text("""SELECT name, email, estado FROM users WHERE rol = 'Administrador' """))
 
-        return [
+        # Mapear resultados al esquema UserProf
+        results = [
             {
-                "namepro": profesor.name,
-                "emailpro": profesor.email,
-                "estado": profesor.estado
+                "namepro": row.name,
+                "emailpro": row.email,
+                "estado": row.estado
             }
-            for profesor in profesores
+            for row in profesores
         ]
+
+        return results
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/main/registro_profesor/", response_model=schemas.UserProf)
+def crear_profesor(profesor_data: UserProf, db: Session = Depends(get_db)):
+    try:
+        # 1. Crear instancia del modelo User
+        nuevo_profesor = User(
+            name=profesor_data.namepro,
+            email=profesor_data.emailpro,
+            estado=profesor_data.estado,
+            rol="Profesor" , # Asignar rol automáticamente
+            hashed_password = "temp123"
+        )
+
+        # 2. Agregar y confirmar en la base de datos
+        db.add(nuevo_profesor)
+        db.commit()
+        db.refresh(nuevo_profesor)
+
+        return UserProf(
+            namepro=nuevo_profesor.name,
+            emailpro=nuevo_profesor.email,
+            estado=nuevo_profesor.estado
+        )
+
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al crear profesor: {str(e)}"
+        )
 
 
 @router.get("/main/dashboard", response_model=List[EstudianteNivel])

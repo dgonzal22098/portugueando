@@ -3,17 +3,18 @@ services:
     build:
       context: .
       dockerfile: dockerfile-mysql
+    container_name: db_portegueando
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: MOROSda2
-      MYSQL_DATABASE: usuarios
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: portugues  # Cambiado a portugues
       MYSQL_USER: dani
       MYSQL_PASSWORD: 1234
-    command: --default-authentication-plugin=mysql_native_password
     ports:
       - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - app-network
     healthcheck:
@@ -40,6 +41,7 @@ services:
       "
     environment:
       - DATABASE_URL=mysql+pymysql://dani:1234@db_portegueando:3306/portugues?charset=utf8mb4
+
       - SECRET_KEY=e8f2a9b1c7d6508a4f3e2d1b7c9a6f0d5e3b2a8c7f6d5e0b9a8c7f6d5e4b3a2c1
     depends_on:
       db_portegueando:
@@ -53,22 +55,39 @@ services:
       context: .
       dockerfile: dockerfile
     ports:
-      - "5173:5173"  # Ajusta los puertos según tu configuración
+      - "5173:5173"
     volumes:
-      - ./src:/app/src  # Para desarrollo en tiempo real
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./package.json:/app/package.json
+      - ./vite.config.js:/app/vite.config.js
+      - node_modules:/app/node_modules
     environment:
       - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
     depends_on:
-      - db_portegueando
-    # Asegúrate de que este comando mantenga el contenedor activo
-    command: npm run dev -- --host 0.0.0.0
+      - backend_portu
+    networks:
+      - app-network
+    restart: unless-stopped
+    # Aumentar el límite de memoria
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
 
   metabase:
     image: cristhian999/proyecto_de_grado:metabase
     ports:
       - "3000:3000"
     environment:
-      MB_DB_FILE: /metabase-data/metabase.db
       MB_DB_TYPE: mysql
       MB_DB_HOST: db_portegueando
       MB_DB_PORT: 3306
@@ -91,4 +110,5 @@ networks:
     driver: bridge
 
 volumes:
-    mysql_data:
+    db_data:
+    node_modules:

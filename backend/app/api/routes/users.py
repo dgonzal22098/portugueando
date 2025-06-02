@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, Cookie, Response, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from typing import List
 from ...database import get_db
 from ... import schemas, crud, models
 from fastapi.responses import JSONResponse
 import jwt
 import time
+from app.schemas.schemas import EstudianteNivel
 import json
 from itsdangerous import URLSafeSerializer, BadSignature
 
@@ -241,29 +243,32 @@ def read_profesores(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/main/dashboard/{nivel_id}/{grupo_id}", response_model=List[dict])
-def read_students(nivel_id: int, grupo_id: int, db: Session = Depends(get_db)):
+@router.get("/main/dashboard", response_model=List[EstudianteNivel])
+def read_students_detail(db: Session = Depends(get_db)):
     try:
-        print(f"Buscando nivel {nivel_id} grupo {grupo_id}")
-        nivel1 = db.query(models.Nivel).filter(
-            models.Nivel.nivel == nivel_id,
-            models.Nivel.grupo == grupo_id
-        ).all()
-        print(f"Resultados encontrados: {len(nivel1)}")
+        # Ejecutar la consulta SQL usando SQLAlchemy
+        estudiantes = db.execute(text(""" SELECT u.name AS nombre, u.email AS correo, n.nivel AS nivel, n.grupo AS grupo, c.professor AS profesor, c.ano_semestre AS semestre, c.horario AS hora FROM users u INNER JOIN nivel n ON u.email = n.email INNER JOIN caracterizacao_escritura c ON u.email = c.email WHERE n.nivel = 3 AND n.grupo = 4 """))
 
-        return [
+        # Convertir los resultados a diccionario
+        results = [
             {
-                "id": n.id,
-                "nombre": n.nombre,
-                "email": n.email,
-                "nivel": n.nivel
+                "nombre": row.nombre,
+                "correo": row.correo,
+                "nivel": row.nivel,
+                "grupo": row.grupo,
+                "profesor": row.profesor,
+                "semestre": row.semestre,
+                "hora": row.hora
             }
-            for n in nivel1
+            for row in estudiantes
         ]
 
+        return results
+
     except Exception as e:
-        print(f"Error en la consulta: {str(e)}")
+        print(f"Error en la consulta: {str(e)}")  # Para debug
         raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/recover/")
 async def recover_password(
         email_data: schemas.EmailSchema,

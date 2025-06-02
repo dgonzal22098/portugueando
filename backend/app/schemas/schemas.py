@@ -2,9 +2,8 @@ from pydantic import BaseModel, EmailStr
 
 
 class UserBase(BaseModel):
-    username: str
+    name: str
     email: str
-
 
 class UserCreate(UserBase):
     password: str
@@ -18,6 +17,8 @@ class UserLogin(BaseModel):
 class User(UserBase):
     id: int
     estado: int
+    rol: str  # ← Agregar campo
+    hashed_password: str
 
     class Config:
         from_attributes = True
@@ -39,14 +40,14 @@ class ResetPasswordSchema(BaseModel):
     new_password: str
 
 
-
-class NivelBase(BaseModel):
+class EstudianteNivel(BaseModel):
     nombre: str
+    correo: str
     nivel: int
     grupo: int
-
-class Nivel(NivelBase):
-    id: int
+    profesor: str
+    semestre: str
+    hora: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True

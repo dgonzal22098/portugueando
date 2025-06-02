@@ -54,16 +54,35 @@ services:
     build:
       context: .
       dockerfile: dockerfile
+    container_name: frontend_puto
     ports:
-      - "5173:5173"  # Ajusta los puertos según tu configuración
+      - "5173:5173"
     volumes:
-      - ./src:/app/src  # Para desarrollo en tiempo real
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./package.json:/app/package.json
+      - ./vite.config.js:/app/vite.config.js
+      - node_modules:/app/node_modules
     environment:
       - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
     depends_on:
-      - db_portegueando
-    # Asegúrate de que este comando mantenga el contenedor activo
-    command: npm run dev -- --host 0.0.0.0
+      - backend_portu
+    networks:
+      - app-network
+    restart: unless-stopped
+    # Aumentar el límite de memoria
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
 
   metabase:
     image: cristhian999/proyecto_de_grado:metabase
@@ -93,3 +112,5 @@ networks:
 
 volumes:
     db_data:
+    node_modules:
+

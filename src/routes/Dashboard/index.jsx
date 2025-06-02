@@ -1,15 +1,7 @@
 import styled from "styled-components"
-import {InputLabel, MenuItem, FormControl, Select, TextField, Box, useMediaQuery, useTheme, FormHelperText } from '@mui/material';
+import {InputLabel, MenuItem, FormControl, Select, TextField, useMediaQuery, useTheme, FormHelperText } from '@mui/material';
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { MdDelete as DeleteIcon } from "react-icons/md";
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import Tooltip from '@mui/material/Tooltip';
 import ModalConfirmation from "./ModalConfirmation";
 import {device} from "../../Breakpoints/breakpoints.js";
 
@@ -19,10 +11,6 @@ import {device} from "../../Breakpoints/breakpoints.js";
 // Logica: Se debe traer el semestre actual del estudiante y mostrar los grupos que tiene asignados.
 const Dashboard = () => {
 
-    const [students, setStudents] = useState([]);
-    const [formState, setFormState] = useState(initialFormState);
-    const [showModalConfirmation, setShowModalConfirmation] = useState(false);
-    const [formErrors, setFormErrors] = useState({});
     const theme = useTheme();
     const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -67,13 +55,22 @@ const Dashboard = () => {
         order: ""
     };
 
-
-
+    const [students, setStudents] = useState([]);
+    const [formState, setFormState] = useState(initialFormState);
+    const [showModalConfirmation, setShowModalConfirmation] = useState(false);
+    const [formErrors, setFormErrors] = useState({});
 
     const fetchStudents = useCallback(async () => {
         try {
             console.log("Iniciando fetch...");
-            const response = await fetch('http://localhost:8000/main/nivel/2/3');
+            const response = await fetch('http://localhost:8000/main/dashboard', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+
+        });
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -102,7 +99,7 @@ const Dashboard = () => {
                 setFormState(prev => ({
                     ...prev,
                     nome: value,
-                    email: selectedStudent.email,
+                    email: selectedStudent.correo,
                     nivel: selectedStudent.nivel?.toString() || ""
                 }));
             }
@@ -117,30 +114,6 @@ const Dashboard = () => {
         }
     }, [students, formErrors]);
 
-    const validateForm = useCallback(() => {
-        const errors = {};
-        let isValid = true;
-
-        fullConfig.forEach(field => {
-            const value = formState[field.name];
-            if (!value && value !== 0) {
-                errors[field.name] = "Este campo es obligatorio";
-                isValid = false;
-            }
-            if (field.type === "number" && value !== "") {
-                const numValue = Number(value);
-                if (numValue > 10 || numValue < 0) {
-                    errors[field.name] = "El valor debe estar entre 0 y 10";
-                    isValid = false;
-                }
-            }
-        });
-
-        setFormErrors(errors);
-        return isValid;
-    }, [fullConfig, formState]);
-
-
     const fullConfig = useMemo(() => [
         {
             label: "Nome",
@@ -151,24 +124,58 @@ const Dashboard = () => {
         {
             label: "E-mail",
             name: "email",
-            options: students.map(student => student.email || ""),
+            options: students.map(student => student.correo || ""),
             type: "select"
         },
         {
-            label: "Nível",
-            name: "nivel",
-            options: students.map(student => student.nivel?.toString() || ""),
+            label: "Professor(a)",
+            name: "profe",
+            options: students.map(student => student.profesor || ""),
             type: "select"
         },
-        ...selectsConfig.slice(3)
+        {
+            label: "Ano-Semestre",
+            name: "semestre",
+            options: students.map(student => student.semestre || ""),
+            type: "select"
+        },
+        {
+            label: "Horário",
+            name: "horario",
+            options: students.map(student => student.hora || ""),
+            type: "select"
+        },
+        ...selectsConfig.slice()
     ], [students]);
+
+    const validateForm = useCallback(() => {
+        const errors = {};
+        let isValid = true;
+
+        fullConfig.forEach(field => {
+            const value = formState[field.name];
+            if (value === "" || value === null || value === undefined) {
+                errors[field.name] = "Este campo es obligatorio";
+                isValid = false;
+            }
+            else if (field.type === "number") {
+                const numValue = Number(value);
+                if (numValue < 0 || numValue > 10) {
+                    errors[field.name] = "El valor debe estar entre 0 y 10";
+                    isValid = false;
+                }
+            }
+        });
+
+        setFormErrors(errors);
+        return isValid;
+    }, [fullConfig, formState]);
 
     const handleSubmit = useCallback(() => {
         if (validateForm()) {
             setShowModalConfirmation(true);
         }
     }, [validateForm]);
-
 
     return (
         <Container>
@@ -260,36 +267,21 @@ export default Dashboard;
 
 
 const a = [
-    1
-]
-const b = [
-    "María Gómez"
+    1, 2, 3, 4, 5, 6
 ];
-const c = [
-    "08:00 - 10:00"
+const redaccion = [
+    "Redação Tarefa (feita em casa)",
+    "Redação Exame (feita na sala de aula)"
 ];
-const d = [
-    "Ensayo"
-];
-const e = [
-    1
-];
-const f = [
-    "María Gómez"
-];
-const g = [
-    "08:00 - 10:00"
-];
-const h = [
-    "Ensayo"
+const cort = [
+    1, 2, 3, 4
 ];
 
+
 const selectsConfig = [
-    { label: "Professor(a)", name: "profesor", options: c },
-    { label: "Ano-Semestre", name: "semestre ", options: e },
-    { label: "Horário", name: "horario", options: f },
-    { label: "Tipo de Redação", name: "redacao", options: g },
-    { label: "Corte", name: "corte", options: h },
+    { label: "Nível", name: "nivel", options: a },
+    { label: "Tipo de Redação", name: "redacao", options: redaccion },
+    { label: "Corte", name: "corte", options: cort },
     { label: "SS", name: "ss", type: "number" },
     { label: "Ç", name: "c", type: "number" },
     { label: "RR", name: "rr", type: "number" },

@@ -33,5 +33,17 @@ class Coleccion(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String(100), nullable=False)
     categoria = Column(String(255), nullable=False)
+    grupo_id = Column(Integer, nullable=True, index=True)
+    # Relación con los contenidos
+    contenidos = relationship("Contenido", back_populates="coleccion", lazy="joined")
 
+class Contenido(Base):
+    __tablename__ = "contenidos"
 
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String(100), nullable=False)
+    categorias = Column(String(255))  # Puedes almacenar categorías separadas por comas
+    url = Column(String(2000))  # Aumentado de 500 a 2000
+    coleccion_id = Column(Integer, ForeignKey("colecciones.id", ondelete="CASCADE"))
+    # Relación con la colección
+    coleccion = relationship("Coleccion", back_populates="contenidos")

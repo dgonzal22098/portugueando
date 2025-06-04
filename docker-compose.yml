@@ -38,17 +38,26 @@ services:
           sleep 1
         done
         echo 'MySQL is ready'
+        # Verificar conectividad a Internet
+        echo 'Checking Internet connectivity...'
+        ping -c 1 8.8.8.8 || echo 'Warning: No Internet connectivity'
         uvicorn app.main:app --host 0.0.0.0 --reload
       "
     environment:
       - DATABASE_URL=mysql+pymysql://dani:1234@db_portegueando:3306/portugues?charset=utf8mb4
       - SECRET_KEY=e8f2a9b1c7d6508a4f3e2d1b7c9a6f0d5e3b2a8c7f6d5e0b9a8c7f6d5e4b3a2c1
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      app-network:
+        aliases:
+          - backend.local
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       db_portegueando:
         condition: service_healthy
-    networks:
-      - app-network
-
 
   frontend_puto:
     build:
@@ -97,8 +106,8 @@ services:
       MB_DB_CONNECTION_URI: "jdbc:mysql://db_portegueando:3306/usuarios?user=dani&password=1234&allowPublicKeyRetrieval=true&useSSL=false"
     volumes:
       - /dev/urandom:/dev/random:ro
-##      - "C:/Users/daniel.rodriguez/Downloads/metabase:/metabase"
-##    entrypoint: ["java", "--add-opens", "java.base/java.nio=ALL-UNNAMED", "-jar", "/metabase/metabase.jar", "load-from-h2", "/metabase/metabase.db"]
+#      - "C:/Users/daniel.rodriguez/Downloads/metabase:/metabase"
+#    entrypoint: ["java", "--add-opens", "java.base/java.nio=ALL-UNNAMED", "-jar", "/metabase/metabase.jar", "load-from-h2", "/metabase/metabase.db"]
     depends_on:
       db_portegueando:
         condition: service_healthy

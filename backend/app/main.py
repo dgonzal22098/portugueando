@@ -10,26 +10,30 @@ models.Base.metadata.create_all(bind=engine)
 # Inicializar FastAPI
 app = FastAPI(title="Backend API")
 
-# Configuración de CORS - importante para que el frontend pueda conectarse
+# Configuración de CORS
+origins = [
+    "http://localhost:5173",  # Frontend Vite
+    "http://localhost:3000",  # Otros puertos si son necesarios
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En producción, limita a dominios específicos
-    allow_credentials=True,
+    allow_origins=origins,
+    allow_credentials=True,  # Importante para las cookies
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],  # Permitir exponer headers al frontend
 )
+
+# Incluir rutas
+app.include_router(users.router)
+
+# Ruta raíz para verificación
+@app.get("/")
+async def root():
+    return {"message": "API is running"}
 
 if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
-
-# Ruta raíz
-@app.get("/")
-async def root():
-    return {"message": "API is running"}
-
-# Incluir rutas de usuarios
-app.include_router(users.router)
-
-# Para ejecutar: uvicorn app.main:app --reload

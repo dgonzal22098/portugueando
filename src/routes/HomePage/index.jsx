@@ -5,69 +5,6 @@ import Header from "./Header";
 import Bienvenida from "./Bienvenida";
 import {device} from "../../Breakpoints/breakpoints"
 
-// Main de Home page
-// Rol: Todos
-// Logica: Muestra ciertas tarjetas dependiendo del rol y se personalizan los links para una guia rapida al inicar su aplicación. No hay pendientes en este modulo.
-
-
-const HomePage = () => {
-
-    const {usuario} = useOutletContext();
-    const rol = usuario.rol;
-
-    const getLinksByRole = (rol) => {
-        switch (rol) {
-            case "Estudiante":
-                return cardsContentEstudiante;
-            case "Profesor":
-                return cardsContentProfesor;
-            case "Administrador":
-                return cardsContentAdmin;
-        }
-    };
-
-    const links = getLinksByRole(rol);
-  
-    return (
-        <>
-            <ContentContainer>
-                <div className="headerContainer">
-                    <Header role={usuario.rol}/>
-                </div>
-
-                <Bienvenida usuario={usuario}/>
-
-                <div className="flipContainer">
-
-                    <div className="left">
-
-                        {links.map((object, index) => (
-                            <InformativeCards
-                                key={index}
-                                frontText={object.frontText}
-                                backText={object.backText}
-                                link={object.link}
-                            />
-                        ))}
-
-                    </div>
-                    <p className="right">
-                        <h2>¿Por qué somos importantes?</h2>
-                        <p>Nuestra aplicación es ese catalizador, diseñada para empoderar tanto a estudiantes como a docentes, ofreciendo una visión clara del progreso, automatizando el análisis y personalizando el aprendizaje.</p>
-                    </p>
-
-                </div>
-
-            </ContentContainer>
-
-
-
-        </>
-    )
-}
-
-export default HomePage
-
 const cardsContentProfesor = [
     {
         frontText: "📊 Registro muy fácil de estudiantes",
@@ -90,6 +27,7 @@ const cardsContentProfesor = [
         link: "/main/material_apoyo",
     },
 ];
+
 const cardsContentEstudiante = [
     {
         frontText: "📈 Acceso a informes de retroalimentación (Reportes)",
@@ -112,6 +50,7 @@ const cardsContentEstudiante = [
         link: "/main/home",
     },
 ];
+
 const cardsContentAdmin = [
     {
         frontText: "🔐 Gestión de docentes",
@@ -125,6 +64,64 @@ const cardsContentAdmin = [
     },
 ];
 
+const getLinksByRole = (data) => {
+    switch (data) {
+        case "Estudiante":
+            return cardsContentEstudiante;
+        case "Profesor":
+            return cardsContentProfesor;
+        case "Administrador":
+            return cardsContentAdmin;
+        default:
+            return [];
+    }
+};
+
+const HomePage = () => {
+    const {usuario} = useOutletContext();
+    const rol = usuario?.user?.rol || ""; // Accediendo al rol a través de user
+
+    const links = getLinksByRole(rol);
+
+    console.log("Usuario completo:", usuario);
+    console.log("Datos de usuario:", usuario?.user);
+    console.log("Rol actual:", rol);
+    console.log("Links generados:", links);
+
+    return (
+        <>
+            <ContentContainer>
+                <div className="headerContainer">
+                    <Header role={rol}/>
+                </div>
+
+                <Bienvenida usuario={usuario?.user || usuario}/>
+
+                <div className="flipContainer">
+                    <div className="left">
+                        {Array.isArray(links) && links.map((object, index) => (
+                            <InformativeCards
+                                key={index}
+                                frontText={object.frontText}
+                                backText={object.backText}
+                                link={object.link}
+                            />
+                        ))}
+                    </div>
+                    <div className="right">
+                        <h2>¿Por qué somos importantes?</h2>
+                        <p className="description">
+                            Nuestra aplicación es ese catalizador, diseñada para empoderar tanto a estudiantes como a docentes,
+                            ofreciendo una visión clara del progreso, automatizando el análisis y personalizando el aprendizaje.
+                        </p>
+                    </div>
+                </div>
+            </ContentContainer>
+        </>
+    )
+}
+
+export default HomePage
 
 const ContentContainer = styled.div`
     width: 100%;
@@ -133,15 +130,18 @@ const ContentContainer = styled.div`
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    align-items:center;
+    align-items: center;
     
     @media ${device.tablet} {
         margin: 0;
     }
-    .headerContainer{
+    
+    .headerContainer {
         height: 100%;
+        width: 100%;
     }
-    .flipContainer{
+    
+    .flipContainer {
         width: 100%;
         padding: 2rem 0;
         display: flex;
@@ -149,8 +149,7 @@ const ContentContainer = styled.div`
         align-content: center;
         justify-content: center;
         
-        
-        .left{
+        .left {
             width: 100%;
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -159,11 +158,8 @@ const ContentContainer = styled.div`
                 grid-template-columns: 1fr;
             }
         }
-        .left p{
-            width: 100%;
-            box-sizing: border-box;
-        }
-        .right{
+        
+        .right {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
@@ -171,22 +167,29 @@ const ContentContainer = styled.div`
             gap: 2rem;
             margin: 0 3rem;
             
-            @media ${device.tablet} {
-                text-align: center;
+            h2 {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
             }
             
+            .description {
+                line-height: 1.6;
+            }
             
+            @media ${device.tablet} {
+                text-align: center;
+                align-items: center;
+            }
         }
         
         @media ${device.tablet} {
             flex-direction: column-reverse;
             width: 80%;
             gap: 2rem;
-            
         }
     }
 
     &::-webkit-scrollbar {
-      display: none;
+        display: none;
     }
 `

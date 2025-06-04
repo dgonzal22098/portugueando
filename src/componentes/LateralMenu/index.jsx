@@ -1,5 +1,5 @@
 import styled from "styled-components"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { FaUserAlt as UserIC, FaBookReader as ReportesIC} from "react-icons/fa";
 import { ImStatsBars as DashboardIC} from "react-icons/im";
@@ -16,14 +16,38 @@ import Tooltip from '@mui/material/Tooltip';
 import ReactDOM from 'react-dom';
 
 
-const LateralMenu = ({isOpen, showSideBar,data}) => {
+const LateralMenu = ({isOpen, showSideBar, data}) => {
   const logo = isOpen && LogoPortugueando;
   const [showModal, setShowModal] = useState(false);
+  const [sessionData, setSessionData] = useState(null);
   const location = useLocation();
 
+  useEffect(() => {
+    // Función para verificar la sesión
+    const checkSession = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/verificar-sesion/', {
+          credentials: 'include' // Importante para incluir las cookies
+        });
+        if (response.ok) {
+          const sessionData = await response.json();
+          setSessionData(sessionData);
+        }
+      } catch (error) {
+        console.error('Error al verificar sesión:', error);
+      }
+    };
 
-  const linksArray = getLinksByRole(data.rol);
+    checkSession();
+  }, []);
 
+  // Usar el rol de la cookie de sesión o del prop data como respaldo
+  const rol = sessionData?.rol || data?.user?.rol || "";
+  const linksArray = getLinksByRole(rol);
+
+  console.log("Data en LateralMenu:", data);
+  console.log("Rol en LateralMenu:", rol);
+  console.log("Links generados:", linksArray);
 
   return (
     <Container isOpen={isOpen}>

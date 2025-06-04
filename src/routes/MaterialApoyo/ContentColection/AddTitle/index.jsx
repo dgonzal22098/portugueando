@@ -1,8 +1,9 @@
+import { useState } from "react";
 import styled from "styled-components";
 import { IoClose } from "react-icons/io5";
 import { TextField } from "@mui/material";
-import { useState } from "react";
 import {device} from "../../../../Breakpoints/breakpoints.js";
+import { materialApoyoService } from "../../../../services/materialApoyo";
 
 // Modulo de agregar un nuevo titulo o item a cierta coleccion
 // Rol: Profesor
@@ -10,9 +11,9 @@ import {device} from "../../../../Breakpoints/breakpoints.js";
 // Pendiente: Ajustar la logica para que permita asignar el item de la coleccion a la retroalimentacion de un estudiante en particular asi como editar la coleccion (cambiar url, tipo de item y nombre)
 
 
-const NuevoItem = ({ setShowAddItem }) => {
-
+const NuevoItem = ({ setShowAddItem, coleccionId, onItemCreado }) => {
     const [showSuccess, setShowSuccess] = useState(false);
+    const [error, setError] = useState(null);
 
     const [newItem, setNewItem] = useState({
         titulo: "",
@@ -20,50 +21,72 @@ const NuevoItem = ({ setShowAddItem }) => {
         tipoColeccion: "",
         link: "",
         archivo: null,
-    })
+    });
 
-    const handleConfirmar = () => {
-        const { titulo, nivel, tipoColeccion, link, archivo } = newItem;
+    const handleConfirmar = async () => {
+        try {
+            const { titulo, nivel, tipoColeccion, link, archivo } = newItem;
 
-        if (!titulo || !nivel || !tipoColeccion) {
-            alert('Todos os campos obrigatórios devem ser preenchidos.');
-            return;
+            if (!titulo || !nivel || !tipoColeccion) {
+                setError('Todos os campos obrigatórios devem ser preenchidos.');
+                return;
+            }
+
+            if ((tipoColeccion === 'Link' || tipoColeccion === 'Video') && !link) {
+                setError('Você deve fornecer um link válido para o recurso.');
+                return;
+            }
+
+            if ((tipoColeccion === 'PDF' || tipoColeccion === 'Word') && !archivo) {
+                setError(`Você deve fazer upload de um arquivo do tipo ${tipoColeccion}.`);
+                return;
+            }
+
+            const contenidoData = {
+                nombre: titulo,
+                categorias: tipoColeccion,
+                url: link || (archivo ? URL.createObjectURL(archivo) : ''),
+                coleccion_id: coleccionId
+            };
+
+            console.log('Enviando contenido:', contenidoData);
+            const contenidoCreado = await materialApoyoService.crearContenido(contenidoData);
+            console.log('Contenido creado:', contenidoCreado);
+
+            if (onItemCreado) {
+                onItemCreado(contenidoCreado);
+            }
+
+            setShowSuccess(true);
+            setTimeout(() => {
+                setShowSuccess(false);
+                setShowAddItem(false);
+            }, 2000);
+
+        } catch (error) {
+            console.error('Error al crear contenido:', error);
+            setError('Ocorreu um erro ao criar o conteúdo. Por favor, tente novamente.');
         }
-
-        if ((tipoColeccion === 'Link' || tipoColeccion === 'Video') && !link) {
-            alert('Você deve fornecer um link válido para o recurso.');
-            return;
-        }
-
-        if ((tipoColeccion === 'PDF' || tipoColeccion === 'Word') && !archivo) {
-            alert(`Você deve fazer upload de um arquivo do tipo ${tipoColeccion}.`);
-            return;
-        }
-
-        setShowSuccess(true);
     };
-
-
-
 
     return (
       <Overlay onClick={() => setShowAddItem(false)}>
         <Modal onClick={(e) => e.stopPropagation()}>
-            
+
             <CloseButton onClick={() => setShowAddItem(false)}>
             <IoClose size={24} />
             </CloseButton>
-            
+
             <h2 style={{margin:"2rem",textAlign:"center"}}>Adicionar novo item</h2>
-    
+
             <TextField
 
                 label="Título do item"
                 value={newItem.titulo}
                 onChange={(e) => setNewItem({...newItem, titulo: e.target.value})}/>
-            
-            
-            <Select 
+
+
+            <Select
                 className="classicSelectStyle"
                 defaultValue=""
                 value={newItem.nivel}
@@ -74,8 +97,8 @@ const NuevoItem = ({ setShowAddItem }) => {
                     ))}
             </Select>
 
-            <Select 
-              className="classicSelectStyle" 
+            <Select
+              className="classicSelectStyle"
               value={newItem.tipoColeccion}
               onChange={
                 (e) => {
@@ -93,7 +116,7 @@ const NuevoItem = ({ setShowAddItem }) => {
                 <option key={index} value={tipo}>{tipo}</option>
               ))}
             </Select>
-            
+
             {(newItem.tipoColeccion === 'Link' || newItem.tipoColeccion === 'Vídeo') && (
               <TextField
 
@@ -103,37 +126,6 @@ const NuevoItem = ({ setShowAddItem }) => {
                   onChange={(e) => setNewItem({...newItem, link: e.target.value})}
               />
             )}
-
-            {['PDF', 'Word'].includes(newItem.tipoColeccion) && (
-                <div style={{ marginLeft: "1.5rem" }}>
-                    <label>Carregar arquivo ({newItem.tipoColeccion})</label>
-                    <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginTop: "0.5rem" }}>
-                        <label
-                            htmlFor="file-upload"
-                            style={{
-                                backgroundColor: "#007bff",
-                                color: "white",
-                                padding: "0.1rem 1rem",
-                                borderRadius: "5px",
-                                cursor: "pointer",
-                            }}
-                        >
-                            Selecionar arquivo
-                        </label>
-                        <span style={{fontSize:"1rem"}}>{newItem.archivo?.name || "Nenhum arquivo selecionado"}</span>
-                    </div>
-                    <input
-                        id="file-upload"
-                        type="file"
-                        accept={newItem.tipoColeccion === 'PDF' ? 'application/pdf' : '.doc,.docx'}
-                        style={{ display: "none" }}
-                        onChange={(e) =>
-                            setNewItem({ ...newItem, archivo: e.target.files[0] })
-                        }
-                    />
-                </div>
-            )}
-
 
             <ButtonGroup>
               <Button onClick={handleConfirmar}>Completo</Button>
@@ -155,7 +147,7 @@ export default NuevoItem;
 const Niveles = [
   1,2,3,4,5,6
 ];  
-const TiposDeColeccion = ['Vídeo', 'Link', 'PDF', 'Word'];
+const TiposDeColeccion = ['Vídeo', 'Link'];
 const Overlay = styled.div`
   position: fixed;
   top: 0;
@@ -276,6 +268,4 @@ const SuccessPopup = styled.div`
     100% { opacity: 0; transform: translateY(10px); }
   }
 `;
-
-
 

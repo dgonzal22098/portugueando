@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-
+from typing import List, Optional, Dict, Any
 
 class UserBase(BaseModel):
     name: str
@@ -34,6 +34,9 @@ class UserProf(BaseModel):
 class EmailSchema(BaseModel):
     email: str
 
+class OTPVerification(BaseModel):
+    email: str
+    code: str
 
 class ResetPasswordSchema(BaseModel):
     token: str
@@ -53,22 +56,34 @@ class EstudianteNivel(BaseModel):
         from_attributes = True
 
 class ContenidoBase(BaseModel):
-    titulo: str
-    fecha: str
-    etiquetas: str
-
-class ColeccionBase(BaseModel):
     nombre: str
-    categoria: str  # Ahora es un string, no una lista
-    contenidos: str
+    categorias: Optional[str] = None
+    url: Optional[str] = None
+    coleccion_id: int
 
-
-class ColeccionCreate(ColeccionBase):
+class ContenidoCreate(ContenidoBase):
     pass
 
-
-class Coleccion(ColeccionBase):
+class ContenidoResponse(ContenidoBase):
     id: int
+    categorias: str
 
     class Config:
         from_attributes = True
+
+class ColeccionBase(BaseModel):
+    nombre: str
+    categoria: str
+
+class ColeccionCreate(ColeccionBase):
+    grupo_id: int = 0
+
+class ColeccionResponse(ColeccionBase):
+    id: int
+    contenidos: List[ContenidoResponse] = []
+    categoria: str
+    grupo_id: int = 0
+
+    class Config:
+        from_attributes = True
+

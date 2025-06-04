@@ -19,6 +19,7 @@ RUN touch src/assets/logos/logoUEANblanco.png
 
 # Instalar dependencias adicionales
 RUN npm install socket.io-client @tanstack/react-query framer-motion
+RUN npm install js-cookie
 
 # Exponer el puerto
 EXPOSE 5173

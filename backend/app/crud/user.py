@@ -21,7 +21,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     # En una app real, hash la contraseña
     hashed_password = user.password
     db_user = models.User(
-        username=user.username,
+        name=user.name,
         email=user.email,
         hashed_password=hashed_password
     )

@@ -20,14 +20,21 @@ const CrearColeccionModal = ({ setShowCrearColeccion }) => {
         categorias:[]
     });
     const handleAgregarCategoria = () => {
-        const categoria = categoriaInput.trim();
-        if (
-            categoria &&
-            !coleccion.categorias.includes(categoria)
-        ) {
+        // Dividir el input por comas y limpiar espacios en blanco
+        const nuevasCategorias = categoriaInput
+            .split(',')
+            .map(cat => cat.trim())
+            .filter(cat => cat.length > 0); // Filtrar elementos vacíos
+
+        // Filtrar categorías que ya existen y agregar las nuevas
+        const categoriasUnicas = nuevasCategorias.filter(
+            cat => !coleccion.categorias.includes(cat)
+        );
+
+        if (categoriasUnicas.length > 0) {
             setColeccion({
                 ...coleccion,
-                categorias: [...coleccion.categorias, categoria],
+                categorias: [...coleccion.categorias, ...categoriasUnicas],
             });
         }
         setCategoriaInput("");
@@ -49,19 +56,13 @@ const CrearColeccionModal = ({ setShowCrearColeccion }) => {
         }
 
         try {
-            // Crear un FormData para enviar los datos
-            const formData = new FormData();
-            formData.append('nombre', nombre);
-
-            // Convertir el array de categorías a un string separado por comas
-            formData.append('categoria', categorias.join(', '));
+            const coleccionData = {
+                nombre: nombre,
+                categoria: categorias.join(', ') // Unir las categorías con comas
+            };
 
             // Enviar al backend
-            await axios.post('http://localhost:8000/main/material_apoyo/', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
+            await axios.post('http://localhost:8000/main/material_apoyo/', coleccionData);
 
             alert('Colección creada exitosamente');
             setShowCrearColeccion(false);
@@ -385,5 +386,4 @@ const OpcionesPost = styled.div`
   margin-top: 2rem;
   justify-content: center;
 `;
-
 

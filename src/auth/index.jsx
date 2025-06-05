@@ -12,7 +12,11 @@ export const AuthProvider = ({children}) => {
             try {
                 // Intentar obtener datos de la cookie primero
                 const response = await fetch('http://localhost:8000/verificar-sesion/', {
-                    credentials: 'include'
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
                 });
 
                 if (response.ok) {
@@ -20,20 +24,13 @@ export const AuthProvider = ({children}) => {
                     console.log('Datos de sesión:', sessionData);
                     setUser(sessionData);
                 } else {
-                    // Si no hay cookie, intentar con localStorage
-                    const userAlmacenado = localStorage.getItem('usuarioLogueado');
-                    if (userAlmacenado) {
-                        const userData = JSON.parse(userAlmacenado);
-                        setUser(userData);
-
-                        if (userData.access_token) {
-                            axios.defaults.headers.common['Authorization'] = `Bearer ${userData.access_token}`;
-                        }
-                    }
+                    console.log('No hay sesión activa');
+                    // Si no hay cookie, limpiar el estado
+                    setUser(null);
                 }
             } catch (error) {
                 console.error('Error al inicializar auth:', error);
-                await logout();
+                setUser(null);
             } finally {
                 setLoading(false);
             }

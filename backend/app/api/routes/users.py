@@ -150,8 +150,28 @@ def login(form_data: schemas.UserLogin, db: Session = Depends(get_db)):
 @router.get("/verificar-sesion/")
 def verificar_sesion(session_data: dict = Depends(get_session_data)):
     if not session_data:
-        raise HTTPException(status_code=401, detail="Sesión no válida")
-    return session_data
+        raise HTTPException(
+            status_code=401,
+            detail="Sesión no válida",
+            headers={"Access-Control-Allow-Credentials": "true"}
+        )
+
+    # Crear nueva respuesta con los datos de sesión
+    response = JSONResponse(content=session_data)
+
+    # Renovar la cookie de sesión
+    session_token = serializer.dumps(session_data)
+    response.set_cookie(
+        key="session",
+        value=session_token,
+        httponly=True,
+        secure=False,  # Cambiar a True en producción con HTTPS
+        samesite="lax",
+        domain=None,  # Permitir cualquier dominio
+        max_age=86400  # 24 horas
+    )
+
+    return response
 
 @router.get("/metabase-token")
 def get_iframe_url(

@@ -13,7 +13,13 @@ app = FastAPI(title="Backend API")
 # Configuración de CORS
 origins = [
     "http://localhost:5173",  # Frontend Vite
-    "http://localhost:3000",  # Otros puertos si son necesarios
+    "http://localhost:3000",  # Metabase
+    "http://192.168.1.0:5173",  # Para IPs de red local
+    "http://192.168.1.0:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
+    "http://0.0.0.0:5173",
+    "http://0.0.0.0:3000",
 ]
 
 app.add_middleware(
@@ -23,6 +29,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],  # Permitir exponer headers al frontend
+    max_age=3600,
 )
 
 # Incluir rutas

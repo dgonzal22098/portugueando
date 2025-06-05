@@ -5,6 +5,7 @@ import { UserProvider } from './context/UserContext';
 import ListaProfesores from "./routes/RegistrarProfesor/InformativeCard/ListaProfesores.jsx";
 
 
+
 function App() {
 
   return (
@@ -24,6 +25,8 @@ function App() {
                     <Main />
                 </ProtectedRoute>}
           >
+
+          <Route index element={<HomePage />} /> {/* /main */}
             <Route path="home" element={<HomePage />} />
             <Route path="profile" element={<Profile />}/>
             <Route path="dashboard" element={<Dashboard />}/>

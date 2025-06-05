@@ -1,10 +1,10 @@
 import styled from "styled-components"
-import { useState } from "react";
 import { IoIosArrowDroprightCircle as Arrow} from "react-icons/io";
 import { FaToggleOn as ToggleOn, FaToggleOff as ToggleOff } from "react-icons/fa";
 import AlertActivation from "../Alert";
 import ModalCursosInscritos from "./ModalCursosInscritos";
 import {device} from "../../../Breakpoints/breakpoints.js"
+import { useState} from "react";
 
 // Componente de informacion de un docente
 // Rol: Administrador
@@ -12,6 +12,8 @@ import {device} from "../../../Breakpoints/breakpoints.js"
 // Revisar: Logica para que el estado del profesor si es cambiado se obtenga del modal Alert
 
 const InformativeCard = ({usuario}) => {
+    console.log("Datos del usuario:", JSON.stringify(usuario, null, 2));
+    console.table(usuario);
     const [isActivated, setIsActivated] = useState(usuario?.estado === 1);
     const [showAlert, setShowAlert] = useState(false);
     const [showCursosInscritos, setShowCursosInscritos] = useState(false);

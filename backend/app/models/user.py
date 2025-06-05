@@ -1,8 +1,9 @@
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime
 from ..database import Base
 from sqlalchemy import DateTime
 from datetime import datetime
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 
 class User(Base):
@@ -36,6 +37,20 @@ class Coleccion(Base):
     grupo_id = Column(Integer, nullable=True, index=True)
     # Relación con los contenidos
     contenidos = relationship("Contenido", back_populates="coleccion", lazy="joined")
+
+class Grupo(Base):
+    __tablename__ = "grupos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    curso_id = Column(String(50), nullable=False)
+    horario = Column(String(20), nullable=False)
+    numero_grupo = Column(Integer, nullable=False)
+    fecha_creacion = Column(DateTime, default=func.now())
+
+    # Campos adicionales si los necesitas
+    profesor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    capacidad_maxima = Column(Integer, default=20)
+    estudiantes_inscritos = Column(Integer, default=0)
 
 class Contenido(Base):
     __tablename__ = "contenidos"

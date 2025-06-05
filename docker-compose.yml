@@ -11,7 +11,7 @@ services:
       MYSQL_USER: dani
       MYSQL_PASSWORD: 1234
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -23,6 +23,10 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    command: 
+      - mysqld
+      - --log-bin-trust-function-creators=1
+      - --bind-address=0.0.0.0 
 
   backend_portu:
     build: ./backend

@@ -51,3 +51,18 @@ class EstudianteNivel(BaseModel):
 
     class Config:
         from_attributes = True
+
+class GrupoCreate(BaseModel):
+    email: str
+    nGrupo: int
+    hora: str
+    fecha: str
+    estado: bool
+    lider: bool
+    nivel: int
+
+class GrupoResponse(GrupoCreate):
+    id_grupo: int
+
+    class Config:
+        form_mode = True

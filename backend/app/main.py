@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from .database import engine
 from . import models
 from .api.routes import users
+from app.models.user import Grupo
+
 
 # Crear tablas en la base de datos
 models.Base.metadata.create_all(bind=engine)

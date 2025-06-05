@@ -2,6 +2,8 @@ import styled from "styled-components";
 import { IoClose } from "react-icons/io5";
 import React, { useState } from "react";
 import {device} from "../../../Breakpoints/breakpoints.js";
+import { useAuth } from "../../../auth/index.jsx";
+
 
 // Modal de crear un nuevo grupo en un curso
 // Rol: Administrador
@@ -15,6 +17,8 @@ const CrearGrupoModal = ({ setShowCrearGrupoModal, cursoId }) => {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
     const [errors, setErrors] = useState({});
+    const { user  } = useAuth();
+
 
     const horariosDisponibles = {
         "Mañana": ["7:00 - 9:00", "9:00 - 11:00", "11:00 - 13:00"],
@@ -48,30 +52,54 @@ const CrearGrupoModal = ({ setShowCrearGrupoModal, cursoId }) => {
         setSuccess(false);
 
         try {
-            const fechaActual = new Date().toISOString().split('T')[0];
-            const response = await fetch("http://localhost:8000/main/grupos/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    curso_id: cursoId,
-                    horario: groupInfo.horario,
-                    jornada: groupInfo.jornada,
-                    fecha_creacion: fechaActual
-                }),
-            });
+          const fechaActual = new Date().toISOString().split('T')[0];
+          // Obtener el próximo número de grupo para el nivel
+          const responseNextNum = await fetch(`http://localhost:8000/main/grupos/next_num?nivel=${cursoId}`);
+          if (!responseNextNum.ok) {
+            const errorText = await responseNextNum.text();
+            throw new Error(errorText || "Error al obtener el próximo número de grupo");
+          }
+          const dataNextNum = await responseNextNum.json();
+          const nextNum = dataNextNum.nextNum;
+          if (typeof nextNum !== "number") throw new Error("No se pudo obtener el número de grupo");
 
-            if (!response.ok) throw new Error("Error al crear el grupo");
-                setSuccess(true);
-                setTimeout(() => {
-                    setShowCrearGrupoModal(false);
-                }, 1200);
-        } catch (err) {
+          if (!user  || !user .email) throw new Error("Usuario no autenticado");
+          if (!groupInfo.horario) throw new Error("Debes seleccionar un horario");
+          if (!groupInfo.jornada) throw new Error("Debes seleccionar una jornada");
+
+          // Datos a enviar al backend
+          const nuevoGrupo = {
+              email: user .email, // Asumiendo que tienes el usuario en el estado
+              nivel: cursoId,
+              nGrupo: nextNum,
+              hora: groupInfo.horario,
+              fecha: fechaActual,
+              estado: true,
+              lider: true,
+              jornada: groupInfo.jornada
+          };
+
+          // Crear el grupo
+          const response = await fetch("http://localhost:8000/main/grupos/", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(nuevoGrupo),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || "Error al crear el grupo");
+          } 
+          
+          setSuccess(true);
+          setTimeout(() => {
+              setShowCrearGrupoModal(false);
+          }, 1200);
+      } catch (err) {
           setError(err.message);
-        } finally {
+      } finally {
           setLoading(false);
-        }
+      }
     };
   
     return (

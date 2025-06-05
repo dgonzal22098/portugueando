@@ -2,6 +2,7 @@ import { BrowserRouter,Routes,Route } from 'react-router-dom'
 import {NewPassword, Recover, Main, Login, Dashboard, Profile, Reportes, Grupos, Cursos, GruposHistoricos, GruposDocente, GruposDocentesNivel, MaterialApoyo, RegistrarProfesor, HomePage, Privacy} from './routes'
 import ProtectedRoute from "./routes/ProtectedRoute";
 import ListaProfesores from "./routes/RegistrarProfesor/InformativeCard/ListaProfesores.jsx";
+import { AuthProvider } from "./auth/index.jsx";
 
 
 

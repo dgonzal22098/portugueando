@@ -1,3 +1,4 @@
+from sqlalchemy import func
 from fastapi import APIRouter, Depends, Cookie, Response, HTTPException
 from sqlalchemy.orm import Session
 
@@ -23,7 +24,10 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from typing import List
 import base64
-from ...models.user import User
+from app.models.user import User, Nivel, Grupo  
+from app.schemas.schemas import GrupoResponse, GrupoCreate
+from app.models.user import Grupo
+from sqlalchemy import func
 from ...schemas.schemas import UserProf
 from typing import Optional
 
@@ -378,3 +382,18 @@ async def reset_password(
     del password_reset_tokens[token]
 
     return {"message": "Contraseña actualizada correctamente"}
+
+@router.get("/main/grupos/next_num")
+def get_next_grupo_num(nivel: int, db: Session = Depends(get_db)):
+    max_num = db.query(func.max(Grupo.nGrupo)).filter(Grupo.nivel == nivel).scalar()
+    next_num = max_num + 1 if max_num is not None else 1
+    return {"nextNum": next_num}
+
+
+@router.post("/main/grupos/", response_model=GrupoResponse)
+def crear_grupo(grupo: GrupoCreate, db: Session = Depends(get_db)):
+    nuevo_grupo = Grupo(**grupo.dict())
+    db.add(nuevo_grupo)
+    db.commit()
+    db.refresh(nuevo_grupo)
+    return nuevo_grupo

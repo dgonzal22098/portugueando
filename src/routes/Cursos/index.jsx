@@ -12,6 +12,10 @@ const titulos = [
   "Portugués 1","Portugués 2","Portugués 3","Portugués 4","Portugués 5","Portugués 6"
 ];
 
+const getNivelFromTitulo = (titulo) => {
+  return parseInt(titulo.split(' ')[1], 6); 
+};
+
 const Cursos = () => {
   const navigate = useNavigate();
   const { usuario } = useOutletContext();
@@ -27,7 +31,7 @@ const Cursos = () => {
   };
 
   const handleCrearGrupo = (nivel) => {
-    setNivelSeleccionado(nivel); // <-- Nombre correcto
+    setNivelSeleccionado(nivel); 
     setShowCrearGrupoModal(true);
 };
 
@@ -35,13 +39,16 @@ const Cursos = () => {
     <Container>
       <Titulo>Cursos y grupos</Titulo>
         <CardContainer>
-          {titulos.map((titulo, index) => (
-            <NivelCard key={index}>
-              <NivelTitulo>{titulo}</NivelTitulo>
-              <Boton onClick={() => handleNavigation(titulo)}>Ver grupos</Boton>
-              <Boton onClick={() => handleCrearGrupo(titulo)}>Crear grupo</Boton>
-            </NivelCard>
-          ))}
+          {titulos.map((titulo, index) => {
+            const nivel = getNivelFromTitulo(titulo);
+            return (
+              <NivelCard key={index}>
+                <NivelTitulo>{titulo}</NivelTitulo>
+                <Boton onClick={() => handleNavigation(titulo)}>Ver grupos</Boton>
+                <Boton onClick={() => handleCrearGrupo(nivel)}>Crear grupo</Boton>
+              </NivelCard>
+            );
+          })}
         </CardContainer>
 
       {showCrearGrupoModal && (

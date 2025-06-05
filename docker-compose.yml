@@ -7,7 +7,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: MOROSda2
-      MYSQL_DATABASE: usuarios  # Cambiado a portugues
+      MYSQL_DATABASE: usuarios
       MYSQL_USER: dani
       MYSQL_PASSWORD: 1234
     command: --default-authentication-plugin=mysql_native_password
@@ -15,7 +15,7 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-      - ./mysql-reset.sql:/docker-entrypoint-initdb.d/mysql-reset.sql
+      - ./mysql-reset.sql:/docker-entrypoint-initdb.d/mysql-reset.sql:ro
     networks:
       - app-network
     healthcheck:
@@ -30,7 +30,8 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/code
+      - ./backend:/code:ro
+      - backend_tmp:/code/tmp
     command: >
       sh -c "
         echo 'Waiting for MySQL to be ready...'
@@ -38,23 +39,15 @@ services:
           sleep 1
         done
         echo 'MySQL is ready'
-        # Verificar conectividad a Internet
-        echo 'Checking Internet connectivity...'
-        ping -c 1 8.8.8.8 || echo 'Warning: No Internet connectivity'
         uvicorn app.main:app --host 0.0.0.0 --reload
       "
     environment:
       - DATABASE_URL=mysql+pymysql://dani:1234@db_portegueando:3306/portugues?charset=utf8mb4
       - SECRET_KEY=e8f2a9b1c7d6508a4f3e2d1b7c9a6f0d5e3b2a8c7f6d5e0b9a8c7f6d5e4b3a2c1
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
     networks:
       app-network:
         aliases:
           - backend.local
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     depends_on:
       db_portegueando:
         condition: service_healthy
@@ -66,10 +59,10 @@ services:
     ports:
       - "5173:5173"
     volumes:
-      - ./src:/app/src
-      - ./public:/app/public
-      - ./package.json:/app/package.json
-      - ./vite.config.js:/app/vite.config.js
+      - ./src:/app/src:ro
+      - ./public:/app/public:ro
+      - ./package.json:/app/package.json:ro
+      - ./vite.config.js:/app/vite.config.js:ro
       - node_modules:/app/node_modules
     environment:
       - NODE_ENV=development
@@ -80,7 +73,6 @@ services:
     networks:
       - app-network
     restart: unless-stopped
-    # Aumentar el límite de memoria
     deploy:
       resources:
         limits:
@@ -106,8 +98,7 @@ services:
       MB_DB_CONNECTION_URI: "jdbc:mysql://db_portegueando:3306/usuarios?user=dani&password=1234&allowPublicKeyRetrieval=true&useSSL=false"
     volumes:
       - /dev/urandom:/dev/random:ro
-#      - "C:/Users/daniel.rodriguez/Downloads/metabase:/metabase"
-#    entrypoint: ["java", "--add-opens", "java.base/java.nio=ALL-UNNAMED", "-jar", "/metabase/metabase.jar", "load-from-h2", "/metabase/metabase.db"]
+      - metabase_data:/metabase-data
     depends_on:
       db_portegueando:
         condition: service_healthy
@@ -119,5 +110,7 @@ networks:
     driver: bridge
 
 volumes:
-    db_data:
-    node_modules:
+  db_data:
+  node_modules:
+  backend_tmp:
+  metabase_data:

@@ -1,20 +1,26 @@
-FROM python:3.9
+FROM python:3.9-slim
 
 WORKDIR /code
 
 COPY ./requirements.txt /code/requirements.txt
 
-# Instalar netcat y ping
-RUN apt-get update && apt-get install -y netcat-traditional iputils-ping
+# Instalar dependencias del sistema y limpiar caché
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    netcat-traditional \
+    iputils-ping && \
+    rm -rf /var/lib/apt/lists/* && \
+    pip install --no-cache-dir --upgrade -r /code/requirements.txt && \
+    pip install --no-cache-dir pydantic-settings watchfiles python-jose[cryptography] && \
+    pip install --upgrade pip
 
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
-RUN pip install pydantic-settings
-RUN pip install watchfiles
-RUN pip install --upgrade pip
+# Crear usuario no privilegiado
+RUN useradd -m -r -s /bin/bash appuser && \
+    chown -R appuser:appuser /code
 
-# Instalar python-jose[cryptography] para JWT
-RUN pip install python-jose[cryptography]
+# Cambiar al usuario no privilegiado
+USER appuser
 
-COPY . /code/app
+COPY --chown=appuser:appuser . /code/app
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

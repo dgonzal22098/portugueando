@@ -14,16 +14,16 @@ import LogoPortugueando from '../../assets/logos/logoPortugueandoBlanco.png'
 import LogoutComp from "../LogoutComp";
 import Tooltip from '@mui/material/Tooltip';
 import ReactDOM from 'react-dom';
+import { useUser } from "../../context/UserContext";
 
 
-const LateralMenu = ({isOpen, showSideBar,data}) => {
+const LateralMenu = ({isOpen, showSideBar}) => {
   const logo = isOpen && LogoPortugueando;
   const [showModal, setShowModal] = useState(false);
+  const { userData } = useUser();  // Usando el contexto global
+
   const location = useLocation();
-
-
-  const linksArray = getLinksByRole(data.rol);
-
+  const linksArray = getLinksByRole(userData?.rol || "");
 
   return (
     <Container isOpen={isOpen}>
@@ -299,4 +299,3 @@ const Container = styled.div`
   
 
 `;
-

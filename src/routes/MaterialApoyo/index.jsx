@@ -1,12 +1,13 @@
 import styled from "styled-components"
 import { TextField } from "@mui/material"
 import { CiSearch } from "react-icons/ci";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import SamplePicture from '../../assets/logos/sampleImg.png'
 import ContentColection from './ContentColection';
 import ColectionCard from "./ColectionCard";
 import NuevaColeccion from "./NuevaColeccion/index.jsx";
+import { materialApoyoService } from "../../services/materialApoyo";
 import {device} from "../../Breakpoints/breakpoints"
 
 // Modulo de las colecciones disponibles
@@ -19,95 +20,120 @@ const MaterialApoyo = () => {
     const [showColection, setShowColection] = useState(true);
     const [showColectionContent, setShowColectionContent] = useState(false);
     const [selectedColection, setSelectedColection] = useState(null);
-    const [colectionName, setColectionName] = useState("");
     const [searchWord, setSearchWord] = useState("");
+    const [materiales, setMateriales] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [showNuevaColeccion, setShowNuevaColeccion] = useState(false);
 
+    useEffect(() => {
+        console.log('Usuario actual:', usuario);
+        cargarMateriales();
+    }, [usuario]);
+
+    const cargarMateriales = async () => {
+        try {
+            console.log('Iniciando carga de materiales para grupo:', usuario?.grupo_id);
+            setLoading(true);
+            const data = await materialApoyoService.obtenerMateriales(usuario?.grupo_id);
+            console.log('Materiales recibidos:', data);
+            setMateriales(data);
+        } catch (error) {
+            console.error('Error detallado al cargar materiales:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status
+            });
+            setError("Error al cargar los materiales");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const materialesFiltrados = materiales.filter(material => {
+        console.log('Filtrando material:', {
+            id: material.id,
+            nombre: material.nombre,
+            searchWord
+        });
+        return material.nombre?.toLowerCase().includes(searchWord.toLowerCase());
+    });
+
+    useEffect(() => {
+        console.log('Materiales filtrados actualizados:', materialesFiltrados);
+    }, [materialesFiltrados]);
 
     return (
-    <Container>
+        <Container>
+            <HeaderContainer>
+                <MainTitle>Material de apoyo - colecciones</MainTitle>
+            </HeaderContainer>
 
-        <MainTitle>Material de apoyo - colecciones</MainTitle>
+            <SearchContainer>
+                <TextField
+                    id="outlined-basic"
+                    label="Buscar aqui..."
+                    variant="outlined"
+                    style={SearchBoxStyle}
+                    sx={{borderRadius:"5px"}}
+                    value={searchWord}
+                    onChange={(e) => {
+                        console.log('Término de búsqueda actualizado:', e.target.value);
+                        setSearchWord(e.target.value);
+                    }}
+                />
+                <CiSearch className="SearchIcon" />
+            </SearchContainer>
 
-        <SearchContainer>
-            <TextField
-                id="outlined-basic"
-                label="Buscar aqui..."
-                variant="outlined"
-                style={SearchBoxStyle}
-                sx={{borderRadius:"5px"}}
-                value={searchWord}
-                onChange={(e) => setSearchWord(e.target.value)}
-            />
-            <CiSearch className="SearchIcon" />
-        </SearchContainer>
+            {loading && <p>Cargando materiales...</p>}
+            {error && <p>{error}</p>}
 
-        {showColection && <ColectionContainer>
+            {showColection && <ColectionContainer>
+                {usuario?.rol === "Profesor" && <NuevaColeccion />}
+                {materialesFiltrados.map((material) => {
+                    const categoriasArray = material.categoria
+                        ? material.categoria.split(',').map(cat => cat.trim())
+                        : [];
 
-            {Titles.map((coleccion, index) => 
-                <ColectionCard 
-                key={index} 
-                titulo={coleccion.titulo}
-                picture={SamplePicture}
-                etiquetas={coleccion.contenidos.flatMap(item => item.etiquetas)}
-                onAcceder={() => {
-                    setShowColection(false);
-                    setShowColectionContent(true);
-                    setColectionName(coleccion.titulo);
-                    setSelectedColection(coleccion);
-                }}
-            />)}
+                    return (
+                        <ColectionCard
+                            key={material.id}
+                            titulo={material.nombre}
+                            picture={material.imagen_url || SamplePicture}
+                            categorias={categoriasArray}
+                            onClick={() => {
+                                console.log('Material seleccionado:', material);
+                                setSelectedColection(material);
+                                setShowColection(false);
+                                setShowColectionContent(true);
+                            }}
+                        />
+                    );
+                })}
+            </ColectionContainer>}
 
-            {usuario.rol === 'Profesor' && <NuevaColeccion />}
+            {showColectionContent && selectedColection && (
+                <ContentColection
+                    colection={selectedColection}
+                    setShowColection={setShowColection}
+                    setShowColectionContent={setShowColectionContent}
+                />
+            )}
 
-
-        </ColectionContainer>}
-
-        {showColectionContent && <ContentColection 
-        usuario={usuario}
-        selectedColection={selectedColection}
-        setShowColection={setShowColection}
-        setShowColectionContent={setShowColectionContent}
-        setSelectedColection={selectedColection}
-        /> }
-
-    </Container>
-)}
+            {showNuevaColeccion && (
+                <NuevaColeccion
+                    setShowNuevaColeccion={setShowNuevaColeccion}
+                    onColeccionCreada={() => {
+                        cargarMateriales();
+                    }}
+                />
+            )}
+        </Container>
+    );
+}
 
 export default MaterialApoyo
 
-const Titles = [
-    {
-      titulo: "Coleccion 1",
-      contenidos: [
-        {
-          titulo: "Título 1: Gramática Intermedia",
-          fecha: "10/08/24",
-          etiquetas: ["gramática", "estructura", "intermedio"],
-        },
-        {
-          titulo: "Título 2: Guía de Verbos Irregulares",
-          fecha: "22/08/24",
-          etiquetas: ["verbos", "tiempos", "irregular"],
-        },
-      ],
-    },
-    {
-      titulo: "Coleccion 2",
-      contenidos: [
-        {
-          titulo: "Título 3: Práctica de Pronunciación",
-          fecha: "05/09/24",
-          etiquetas: ["oralidad", "pronunciación", "fonética"],
-        },
-        {
-          titulo: "Título 4: Lecturas Cortas en Portugués",
-          fecha: "19/09/24",
-          etiquetas: ["lectura", "comprensión", "portugués"],
-        },
-      ],
-    },
-
-  ];
 const SearchBoxStyle = {
     backgroundColor: "white",
     width: "90%",
@@ -201,3 +227,27 @@ const Button = styled.button`
         font-size: 1.3rem;
     }
 `
+
+const HeaderContainer = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 2rem;
+`;
+
+const AddButton = styled.button`
+    background-color: #3BAC52;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: #2d8a3e;
+    }
+`;
+

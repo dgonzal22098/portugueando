@@ -2,59 +2,77 @@ import { useState } from "react";
 import styled from "styled-components"
 import NuevoItem from "./AddTitle";
 import {device} from "../../../Breakpoints/breakpoints"
+import { useOutletContext } from "react-router-dom";
 
 // Modulo de coleccion seleccionada
 // Rol: Estudiante, Profesor
 // Logica: Muestra los items creados dentro de una coleccion, para el profesor estara habilitado la opcion de crear un nuevo item y editarlo, para estudiante solamente podra revisar y acceder al contenido. Este modulo debera enviar la informacion del nuevo item creado a la base de datos, solo cuando este habilitado el docente.
 // Valor agregado: que al ingresar a cada titulo se pueda saber mas acerca del titulo o del link como tal con un boton de ver mas usando el parametro ({colectionName, onVerMas }) del componente
 
-const ContentColection = ({selectedColection, setShowColection, setShowColectionContent, setSelectedColection, usuario}) => {
+const ContentColection = ({colection, setShowColection, setShowColectionContent}) => {
+    const [showAddItem, setShowAddItem] = useState(false);
+    const [contenidos, setContenidos] = useState(colection.contenidos || []);
+    const {usuario} = useOutletContext();
 
-    const [showAddItem,setShowAddItem] = useState(false);
-
+    console.log('ContentColection render:', { colection, contenidos });
 
     const handleCancel = () => {
         setShowColection(true);
         setShowColectionContent(false);
-        setSelectedColection(null);
         window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
+    const handleItemCreado = (nuevoContenido) => {
+        console.log('Nuevo contenido creado:', nuevoContenido);
+        setContenidos(prevContenidos => [...prevContenidos, nuevoContenido]);
+    }
+
+    if (!colection) {
+        console.error('No collection data provided');
+        return null;
+    }
+
     return (
-    <Container >
+        <Container>
+            <h1 style={{ marginBottom:"2rem" }}>{colection.nombre}</h1>
 
-        <h1 style={{ marginBottom:"2rem" }}>{selectedColection.titulo}</h1>
-
-        <Row className="encabezado">
-            <h3>Recurso para fortalecer competencias</h3>
-            <h3 className="right">Fecha de creación</h3>
-        </Row>
-
-        {selectedColection.contenidos.map((item, index) => (
-            <Row key={index}>
-                <Titulo><a >{item.titulo}</a></Titulo>
-                <Fecha>{item.fecha}</Fecha>
-                {/* <VerMasBtn onClick={() => onVerMas(item)}>Ver más</VerMasBtn> */}
+            <Row className="encabezado">
+                <h3>Recurso para fortalecer competencias</h3>
+                <h3 className="right">Fecha de creación</h3>
             </Row>
-        ))}
 
-        {usuario.rol === 'Profesor' &&
-        
-          <ButtonCont>
+            {contenidos.map((item, index) => (
+                <Row key={index}>
+                    <Titulo>
+                        <a href={item.url} target="_blank" rel="noopener noreferrer">
+                            {item.nombre}
+                        </a>
+                    </Titulo>
+                    <Fecha>{new Date().toLocaleDateString()}</Fecha>
+                </Row>
+            ))}
 
-              <Button onClick={() => setShowAddItem(true)}>Agregar item</Button>
-              <Button 
-              className="regresar" 
-              onClick={handleCancel}>Volver</Button>
+            {usuario?.rol === 'Profesor' &&
+                <ButtonCont>
+                    <Button onClick={() => setShowAddItem(true)}>Agregar item</Button>
+                    <Button
+                        className="regresar"
+                        onClick={handleCancel}
+                    >
+                        Volver
+                    </Button>
+                </ButtonCont>
+            }
 
-          </ButtonCont>
-        }
-        
-        {showAddItem && <NuevoItem setShowAddItem={setShowAddItem}/>}
-
-
-    </Container>)
-  
+            {showAddItem && (
+                <NuevoItem
+                    setShowAddItem={setShowAddItem}
+                    coleccionId={colection.id}
+                    onItemCreado={handleItemCreado}
+                />
+            )}
+        </Container>
+    );
 }
 
 export default ContentColection
@@ -164,3 +182,4 @@ const Button = styled.button`
   }
 
 `
+

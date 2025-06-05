@@ -10,7 +10,7 @@ const MetabaseDashboard = () => {
         const fetchMetabaseUrl = async () => {
             try {
                 // Intentar obtener el token usando la sesión (cookies)
-                const response = await axios.get('http://localhost:8000/api/metabase-token');
+                const response = await axios.get('http://localhost:8000/metabase-token');
                 setIframeUrl(response.data.iframeUrl);
             } catch (err) {
                 console.error("Error al obtener la URL de Metabase:", err);

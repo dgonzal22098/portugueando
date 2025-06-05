@@ -1,37 +1,33 @@
 import styled from "styled-components"
-import { useOutletContext } from "react-router-dom"
 import ProfilePicture from "./ProfilePicture";
 import {device} from "../../Breakpoints/breakpoints"
-
-// Main de Profile
-// Rol: Todos
-// Logica: Aqui se debe conseguir varios datos del usuario, dependiendo del tipo de usuario (estudiante,profesor o admin) se deben implantar los datos dentro de la card y que sea un proceso automatico, los datos se traen desde la base de datos.
+import { useUser } from "../../context/UserContext";
 
 const Profile = () => {
-    const {usuario} = useOutletContext();
+    const { userData } = useUser();
+
+    if (!userData) {
+        return <Container><h2>Cargando datos del usuario...</h2></Container>;
+    }
 
     return (
     <Container>
         <h1 style={{fontSize: "3rem", marginBottom:"2rem"}}>Perfil</h1>
-        <h2 style={{marginBottom:"2rem"}}>Datos básicos: {usuario.rol}</h2>
-        
+        <h2 style={{marginBottom:"2rem"}}>Datos básicos: {userData.rol}</h2>
+
         <div className="infoContainer">
-            
             <InformativeCard>
                 <p>Nombre completo: </p>
-                <DataModified>{usuario.name}</DataModified>
+                <DataModified>{userData.name}</DataModified>
 
                 <p>Correo institucional: </p>
-                <DataModified>{usuario.email}</DataModified>
+                <DataModified>{userData.email}</DataModified>
             </InformativeCard>
 
             <ProfilePicture />
-
         </div>
-
-
-
-    </Container>)
+    </Container>
+    );
 }
 
 export default Profile

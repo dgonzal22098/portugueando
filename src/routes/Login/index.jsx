@@ -1,140 +1,169 @@
 import {styled} from "styled-components";
 import { Link } from "react-router-dom";
-import {Card, Formulario, Inputs, Button} from '../../componentes'
+import {Card, Formulario, Button} from '../../componentes'
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import TextField from '@mui/material/TextField';
+import { useAuth } from "../../auth";
+
 
 axios.defaults.withCredentials = true;
 
-// quedaria pendiente asegurarse de que el error que tenga la validacion se muestre en el texthelper 
-
 const Login = () => {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [otpCode, setOtpCode] = useState("");
+    const [showOTPInput, setShowOTPInput] = useState(false);
     const [error, setError] = useState("");
-    const [inputError, setInputError] = useState({ email: false, contrasena: false });
+    const [inputError, setInputError] = useState({ email: false, otp: false });
 
-    const handleLogin = async (e) => {
+    const handleRequestOTP = async (e) => {
         e.preventDefault();
 
         if (!email.endsWith('@universidadean.edu.co')) {
             setError('El correo debe finalizar en @universidadean.edu.co');
-            setInputError({email:true, password:true});
+            setInputError({email: true});
             return;
         }
 
         try {
-            const res = await axios.post("http://localhost:8000/login/", {
-                email,
-                password,
-            }, { withCredentials: true });
+            await axios.post("http://localhost:8000/request-otp/", {
+                email: email
+            });
 
-            localStorage.setItem('usuarioLogueado', JSON.stringify(res.data));
             setError('');
-            setInputError({email:false, password:false});
-            navigate("/main/home");
+            setInputError({email: false});
+            setShowOTPInput(true);
+        } catch (error) {
+            console.error("Error al solicitar código:", error);
+            setError(error.response?.data?.detail || "Error al enviar el código");
+            setInputError({email: true});
+        }
+    };
+
+    const handleVerifyOTP = async (e) => {
+        e.preventDefault();
+
+        try {
+            const res = await axios.post("http://localhost:8000/verify-otp/", {
+                email: email,
+                code: otpCode
+            }, {
+                withCredentials: true // Asegurarse de que se envían las cookies
+            });
+
+            console.log('Respuesta de verificación:', res.data);
+
+            // Asegurarse de que tenemos los datos necesarios
+            if (!res.data || !res.data.user) {
+                throw new Error('Respuesta inválida del servidor');
+            }
+
+            // Llamar a login con los datos de la respuesta
+            await login(res.data);
+
+            console.log('Login exitoso, redirigiendo...');
+            setError('');
+            setInputError({email: false, otp: false});
+
+            // Forzar un pequeño retraso para asegurar que los datos se guarden
+            setTimeout(() => {
+                navigate("/main/home");
+            }, 100);
 
         } catch (error) {
-            console.error("Error al iniciar sesión", error);
-            setError("Correo o contraseña incorrectos");
-            setInputError({email:true, password:true})
+            console.error("Error completo:", error);
+            setError(error.response?.data?.detail || "Error al verificar el código");
+            setInputError({otp: true});
         }
-    }
+    };
 
     return (
         <Background>
             <Card title="Acceso a Portugueando">
-
-                <Formulario onSubmit={handleLogin}>
-
-                    <TextField 
-                    id="outlined-basic" 
-                    label="Correo institucional" 
-                    variant="outlined" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    error={inputError.email}
-                    helperText={inputError.email ? "Correo incorrecto o inexistente" : ""}
-                    sx={{
-                        width: "100%",
-                        margin: "1rem 0",
-                        "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        "& fieldset": {
-                            borderColor: inputError.email ? "red" : "#d9d9d9",
-                        },
-                        "&:hover fieldset": {
-                            borderColor: inputError.email ? "red" : "#888",
-                        },
-                        "&.Mui-focused fieldset": {
-                            borderColor: inputError.email ? "red" : "#1976d2",
-                        },
-                        color: inputError.email ? "red" : "inherit",
-                        },
-                        "& .MuiInputLabel-root": {
-                        color: inputError.email ? "red" : "inherit",
-                        },
-                    }}
-                    />
-
-
-                    <Grouped>
-
-                        <LinkDecorated to="/recover">¿Olvidaste tu contraseña?</LinkDecorated>
-
-                        <TextField
-                        id="outlined-password-input"
-                        label="Contraseña"
-                        type="password"
-                        autoComplete="current-password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        error={inputError.password}
-                        helperText={inputError.password ? "Contraseña incorrecta" : ""}
+                <Formulario onSubmit={showOTPInput ? handleVerifyOTP : handleRequestOTP}>
+                    <TextField
+                        id="outlined-basic"
+                        label="Correo institucional"
+                        variant="outlined"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={showOTPInput}
+                        error={inputError.email}
+                        helperText={inputError.email ? "Correo incorrecto o inexistente" : ""}
                         sx={{
                             width: "100%",
                             margin: "1rem 0",
                             "& .MuiOutlinedInput-root": {
-                            borderRadius: "10px",
-                            "& fieldset": {
-                                borderColor: inputError.password ? "red" : "#d9d9d9",
-                            },
-                            "&:hover fieldset": {
-                                borderColor: inputError.password ? "red" : "#888",
-                            },
-                            "&.Mui-focused fieldset": {
-                                borderColor: inputError.password ? "red" : "#1976d2",
-                            },
-                            color: inputError.password ? "red" : "inherit",
+                                borderRadius: "10px",
+                                "& fieldset": {
+                                    borderColor: inputError.email ? "red" : "#d9d9d9",
+                                },
+                                "&:hover fieldset": {
+                                    borderColor: inputError.email ? "red" : "#888",
+                                },
+                                "&.Mui-focused fieldset": {
+                                    borderColor: inputError.email ? "red" : "#1976d2",
+                                },
+                                color: inputError.email ? "red" : "inherit",
                             },
                             "& .MuiInputLabel-root": {
-                            color: inputError.password ? "red" : "inherit",
+                                color: inputError.email ? "red" : "inherit",
                             },
                         }}
-                        />
+                    />
 
+                    {showOTPInput && (
+                        <TextField
+                            id="otp-input"
+                            label="Código de verificación"
+                            variant="outlined"
+                            value={otpCode}
+                            onChange={(e) => setOtpCode(e.target.value)}
+                            error={inputError.otp}
+                            helperText={inputError.otp ? "Código inválido" : ""}
+                            sx={{
+                                width: "100%",
+                                margin: "1rem 0",
+                                "& .MuiOutlinedInput-root": {
+                                    borderRadius: "10px",
+                                }
+                            }}
+                        />
+                    )}
+
+                    <Grouped>
+                        {!showOTPInput && (
+                            <LinkDecorated to="/recover">¿Olvidaste tu contraseña?</LinkDecorated>
+                        )}
 
                         <Grouped style={{alignItems:"center"}}>
-                            <Button type="submit" texto="Acceder"/>
+                            <Button
+                                type="submit"
+                                texto={showOTPInput ? "Verificar código" : "Solicitar código"}
+                            />
                         </Grouped>
 
+                        {showOTPInput && (
+                            <ResendLink onClick={handleRequestOTP}>
+                                ¿No recibiste el código? Solicitar otro
+                            </ResendLink>
+                        )}
                     </Grouped>
 
-
-
+                    {error && (
+                        <ErrorMessage>{error}</ErrorMessage>
+                    )}
                 </Formulario>
 
-            </Card>     
-        </Background>   
+            </Card>
+        </Background>
     )
-  
 }
 
 export default Login;
-
 
 const Background = styled.div`
     width: 100%;
@@ -163,3 +192,48 @@ const LinkDecorated = styled(Link)`
     text-decoration: underline;
     }
 `
+
+const Divider = styled.div`
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+
+    &::before,
+    &::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    span {
+        padding: 0 10px;
+        color: #666;
+        font-size: 0.9rem;
+    }
+`;
+
+
+
+const ResendLink = styled.button`
+    background: none;
+    border: none;
+    color: #3bac52;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+    margin-top: 1rem;
+
+    &:hover {
+        color: #0c47a1;
+    }
+`;
+
+const ErrorMessage = styled.div`
+    color: #d32f2f;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+    text-align: center;
+`;
+

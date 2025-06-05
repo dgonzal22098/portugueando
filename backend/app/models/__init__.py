@@ -1,2 +1,3 @@
 from ..database import Base
-from .user import User
+from .user import User, Nivel, Coleccion
+

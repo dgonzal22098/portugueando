@@ -19,32 +19,38 @@ const Main = () => {
     setIsOpen(!isOpen);
   };
 
- // const pathSegments = location.pathname.split('/').filter(Boolean);
-  //const currentPath = pathSegments[pathSegments.length - 1] || 'main';
-
   useEffect(() => {
     const usuarioAlmacenado = localStorage.getItem('usuarioLogueado');
 
     if (usuarioAlmacenado) {
-      setUsuario(JSON.parse(usuarioAlmacenado));
+      const userData = JSON.parse(usuarioAlmacenado);
+      console.log('Usuario cargado:', userData); // Para debugging
+      setUsuario(userData);
+    } else {
+      console.log('No hay usuario almacenado en localStorage');
     }
   }, []);
 
-
   if (!usuario) {
-    return <p>Cargando usuario...</p>;
+    return <div>Cargando usuario...</div>;
   }
 
+  // Para debugging
+  console.log('Usuario en Main:', usuario);
+  console.log('Usuario.user:', usuario?.user);
+
   return (
-
-      <Container>
-        <div className="sidebarState">
-          <LateralMenu isOpen={isOpen} setIsOpen={setIsOpen} showSideBar={toggleSidebar} data={usuario}/>
-          <Outlet context={{usuario}}/>
-        </div>
-        <Footer />
-
-      </Container>
+    <Container>
+      <div className="sidebarState">
+        <LateralMenu
+          isOpen={isOpen}
+          showSideBar={toggleSidebar}
+          data={usuario}
+        />
+        <Outlet context={{usuario}}/>
+      </div>
+      <Footer />
+    </Container>
   )
 }
 

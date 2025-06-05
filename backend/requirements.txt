@@ -13,3 +13,5 @@ PyJWT
 fastapi-sessions
 python-multipart
 itsdangerous
+alembic
+

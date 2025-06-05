@@ -1,6 +1,7 @@
 import { BrowserRouter,Routes,Route } from 'react-router-dom'
 import {NewPassword, Recover, Main, Login, Dashboard, Profile, Reportes, Grupos, Cursos, GruposHistoricos, GruposDocente, GruposDocentesNivel, MaterialApoyo, RegistrarProfesor, HomePage, Privacy} from './routes'
 import ProtectedRoute from "./routes/ProtectedRoute";
+import { UserProvider } from './context/UserContext';
 import ListaProfesores from "./routes/RegistrarProfesor/InformativeCard/ListaProfesores.jsx";
 
 
@@ -8,8 +9,9 @@ import ListaProfesores from "./routes/RegistrarProfesor/InformativeCard/ListaPro
 function App() {
 
   return (
-    <BrowserRouter>
-      <Routes>
+    <UserProvider>
+      <BrowserRouter>
+        <Routes>
           {/* Rutas publicas */}
           <Route path="/" element={<Login />} />
           <Route path="/recover" element={<Recover />} />
@@ -39,7 +41,8 @@ function App() {
             <Route path='material_apoyo' element={<MaterialApoyo />} />
           </Route>
         </Routes>
-    </BrowserRouter>
+      </BrowserRouter>
+    </UserProvider>
   );
   
 }

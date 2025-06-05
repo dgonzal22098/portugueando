@@ -56,7 +56,7 @@ const Button = styled.button`
 
 const Imagen = styled.img`
     border-radius: 50%;
-    width: 30%;
+    width: 15%;
 `
 
 const ContainerNew = styled.div`

@@ -22,6 +22,7 @@ const InformativeCard = ({usuario}) => {
         return null;
     }
 
+
     return (
         <Container>
             <Primero>

@@ -4,13 +4,16 @@ WORKDIR /code
 
 COPY ./requirements.txt /code/requirements.txt
 
-# Instalar netcat
-RUN apt-get update && apt-get install -y netcat-traditional
+# Instalar netcat y ping
+RUN apt-get update && apt-get install -y netcat-traditional iputils-ping
 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 RUN pip install pydantic-settings
 RUN pip install watchfiles
 RUN pip install --upgrade pip
+
+# Instalar python-jose[cryptography] para JWT
+RUN pip install python-jose[cryptography]
 
 COPY . /code/app
 

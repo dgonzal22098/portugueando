@@ -9,12 +9,6 @@ import ShowRegistrationForm from './StudentRegistrationForm'
 import ListaEjemplo from "./ListaEjemplo";
 import {device} from "../../../../Breakpoints/breakpoints";
 
-// Modulo dentro del grupo seleccionado
-// Rol: Profesor
-// Funcion: Este modulo muestra la informacion de los grupos asignados a cierto curso, permite subir el archivo excel de nuevos estudiantes y crear estudiantes manualmente uno por uno.
-// Logica: Solamente funciona para mostrar objetos, no tiene ninguna logica en este modulo.
-// Pendiente: revisar para que cuando se suba el archivo de nuevos estudiantes y se active el boton, pueda mostrar los estudiantes actualizados, tambien considerar la funcionalidad de que el docente pueda modificar cierto estudiante en especifico en el modulo de la lista directamente.
-
 const GruposDocentesNivel = () => {
   const location = useLocation();
   const { nivel } = location.state || {};
@@ -23,79 +17,116 @@ const GruposDocentesNivel = () => {
   const [studentForm, setShowStudentForm] = useState(false);
   const [studentUploaded, setStudentUploaded] = useState(false);
   const [listaEstudiantesEjemplo, setListaEstudiantesEjemplo] = useState(false);
+  const [grupos, setGrupos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchGrupos = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`http://localhost:8000/main/grupos/${nivel}`);
+      if (!response.ok) {
+        throw new Error('Error al cargar los grupos');
+      }
+      const data = await response.json();
+      // Filtrar solo los grupos donde el profesor es líder
+      const gruposLider = data.grupos || [];
+      setGrupos(gruposLider);
+
+      // Log para debugging
+      console.log('Grupos recibidos:', gruposLider);
+    } catch (err) {
+      console.error('Error al cargar grupos:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (nivel) {
+      fetchGrupos();
+    }
+  }, [nivel]);
 
   const regresarButton = () => {
     navigate("/main/cursos");
   }
 
+  if (loading) return <LoadingMessage>Cargando grupos...</LoadingMessage>;
+  if (error) return <ErrorMessage>{error}</ErrorMessage>;
 
-  useEffect(() => {
-    if(nivel) {
-      console.log("Nivel recibido: ", nivel);
-    }
-  }, [nivel]);
-
-  
-
-    return (
+  return (
     <Container>
       <Titulo>Mis grupos: {nivel}</Titulo>
 
       <CardContainer>
+        {grupos.length > 0 ? (
+          grupos.map((grupo) => (
+            <GrupoContainer key={grupo.id_grupo}>
+              <HeadContainer>
+                <h2>Grupo {grupo.nGrupo}</h2>
+                <StatusCont>{grupo.estado ? 'Activo' : 'Inactivo'}</StatusCont>
+              </HeadContainer>
 
-        <GrupoContainer>
+              <p>Fecha de creación: {grupo.fecha ? new Date(grupo.fecha).toLocaleDateString() : 'No disponible'}</p>
 
-          <HeadContainer>
-            <h2>Grupo 1</h2>
-            <StatusCont>Activo</StatusCont>
-          </HeadContainer>
+              {studentUploaded && (
+                <Button
+                  style={{width:"49%"}}
+                  className="buttonIcon"
+                  onClick={() => setListaEstudiantesEjemplo(true)}
+                >
+                  Ver estudiantes
+                </Button>
+              )}
 
-          <p>Fecha de creación: 27-01-2024</p>
+              <ButtonCont>
+                <Button className="buttonIcon" onClick={() => setShowUploadModal(grupo.id_grupo)}>
+                  Subir lista de estudiantes
+                  <MdFileUpload className="icon"/>
+                </Button>
 
-          {studentUploaded && <Button 
-          style={{width:"49%"}} 
-          className="buttonIcon"
-          onClick={() => setListaEstudiantesEjemplo(true)}
-          >
-            Ver estudiantes
-          </Button>}
-
-          <ButtonCont>
-
-            <Button className="buttonIcon" onClick={() => setShowUploadModal(true)}>
-              Subir lista de estudiantes
-              <MdFileUpload  className="icon"/>
-            </Button>
-
-            <Button onClick={() => setShowStudentForm(true)}>Agregar manual</Button>
-
-          </ButtonCont>
-          <p className="advise">Archivo .csv separado por punto y coma.</p>
-
-        </GrupoContainer>
-
-        {studentForm && <ShowRegistrationForm 
-          onCancel={() => setShowStudentForm(false)}
-          setShowStudentForm={setShowStudentForm}/>}
+                <Button onClick={() => setShowStudentForm(true)}>Agregar manual</Button>
+              </ButtonCont>
+              <p className="advise">Archivo .csv separado por punto y coma.</p>
+            </GrupoContainer>
+          ))
+        ) : (
+          <NoGruposMessage>No hay grupos disponibles para este nivel</NoGruposMessage>
+        )}
 
         <Button onClick={regresarButton} className="buttonIcon">
           Regresar
           <IoIosReturnLeft className="icon"/>
         </Button>
-
       </CardContainer>
 
-      {showUploadModal && <UploadFile 
-      setShowUploadModal={setShowUploadModal} 
-      setStudentUploaded={setStudentUploaded}/>}
+      {showUploadModal && (
+        <UploadFile
+          setShowUploadModal={() => setShowUploadModal(false)}
+          setStudentUploaded={setStudentUploaded}
+          grupoId={showUploadModal}
+        />
+      )}
 
-      {listaEstudiantesEjemplo && <ListaEjemplo setListaEstudiantesEjemplo={setListaEstudiantesEjemplo}/>}
+      {studentForm && (
+        <ShowRegistrationForm
+          onCancel={() => setShowStudentForm(false)}
+          setShowStudentForm={setShowStudentForm}
+        />
+      )}
 
-    </Container>)
+      {listaEstudiantesEjemplo && (
+        <ListaEjemplo
+          setListaEstudiantesEjemplo={setListaEstudiantesEjemplo}
+        />
+      )}
+    </Container>
+  );
 }
 
 export default GruposDocentesNivel
-
 
 const Container = styled.div`
     padding: 2.5rem;
@@ -212,6 +243,26 @@ const Button = styled.button`
     font-size: 1rem;
   }
 `
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #666;
+`;
 
+const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: #ff0033;
+  font-size: 1.2rem;
+`;
 
-
+const NoGruposMessage = styled.div`
+  text-align: center;
+  padding: 2rem;
+  background: white;
+  border-radius: 15px;
+  border: 1px #d9d9d9 solid;
+  color: #666;
+  font-size: 1.2rem;
+`;

@@ -1,16 +1,66 @@
-
 import styled from "styled-components";
 import { IoClose } from "react-icons/io5";
 import {device} from "../../../../Breakpoints/breakpoints.js";
+import { useState } from "react";
 
 // Modal de confirmacion de nuevo docente
 // Rol: Administrador
 // Logica: enviar la informacion del profesor nuevo que se ha agregado de forma manual a la base de datos.
 
 const ModalNewProfesor = ({setShowProfesorModal, profesorInfo, setMostrarFormulario}) => {
-    
-    const handleSubmit = (e) => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
+
+    const validateEmail = (email) => {
+        return email.toLowerCase().endsWith('@universidadean.edu.co');
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+        setSuccess(false);
+
+        // Validar el correo electrónico
+        if (!validateEmail(profesorInfo.email)) {
+            setError('Solo se permiten correos con dominio @universidadean.edu.co');
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:8000/main/registro_profesor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    name: profesorInfo.name,
+                    email: profesorInfo.email.toLowerCase(), // Asegurar que el correo esté en minúsculas
+                    password: "DefaultPass123!", // Contraseña temporal
+                    rol: "Profesor",
+                    estado: profesorInfo.estado
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Error al crear el profesor');
+            }
+
+            setSuccess(true);
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+
+        } catch (err) {
+            setError(err.message);
+            console.error('Error:', err);
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     return (
@@ -26,25 +76,29 @@ const ModalNewProfesor = ({setShowProfesorModal, profesorInfo, setMostrarFormula
 
                 <h2 style={{marginBottom:"1rem"}}>Confirmación nuevo profesor</h2>
                 <ul style={{ textAlign: "left", margin:"3rem" }}>
-                    <li><strong>Nombre:</strong> {profesorInfo.fullName}</li>
+                    <li><strong>Nombre:</strong> {profesorInfo.name}</li>
                     <li><strong>Correo:</strong> {profesorInfo.email}</li>
-                    <li><strong>Cédula:</strong> {profesorInfo.id}</li>
-                    <li><strong>Fecha de nacimiento:</strong> {profesorInfo.dob}</li>
+                    <li><strong>Estado:</strong> {profesorInfo.estado}</li>
                 </ul>
 
+                {error && (
+                    <ErrorMessage>{error}</ErrorMessage>
+                )}
+
+                {success && (
+                    <SuccessMessage>¡Profesor creado exitosamente!</SuccessMessage>
+                )}
+
                 <ModalButtons>
-
-                    <Confirm 
-                    onClick={() => {console.log("Profesor creado");
-                        setShowProfesorModal(false);
-                        setMostrarFormulario(false);
-                    }}>
-                        Confirmar registro
+                    <Confirm
+                    onClick={handleSubmit}
+                    disabled={isLoading || success}>
+                        {isLoading ? 'Creando...' : 'Confirmar registro'}
                     </Confirm>
-                    <Cancel onClick={() => setShowProfesorModal(false)}>Cancelar</Cancel>
-
+                    <Cancel onClick={() => setShowProfesorModal(false)} disabled={isLoading}>
+                        Cancelar
+                    </Cancel>
                 </ModalButtons>
-
             </Modal>
         </ModalBackdrop>
     );
@@ -131,3 +185,19 @@ const CloseButton = styled.button`
       color: #ff5f5f;
     }
   `;
+const ErrorMessage = styled.div`
+    color: red;
+    margin: 1rem 0;
+    padding: 0.5rem;
+    border: 1px solid red;
+    border-radius: 4px;
+    background-color: #ffebeb;
+`;
+const SuccessMessage = styled.div`
+    color: #2e7d32;
+    margin: 1rem 0;
+    padding: 0.5rem;
+    border: 1px solid #2e7d32;
+    border-radius: 4px;
+    background-color: #e8f5e9;
+`;

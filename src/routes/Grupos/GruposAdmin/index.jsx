@@ -1,8 +1,8 @@
 import styled from "styled-components"
-import {useNavigate, useOutletContext} from "react-router-dom";
+import {useNavigate, useOutletContext, useLocation} from "react-router-dom";
 import { FaHistory } from "react-icons/fa";
 import { IoMdAdd } from "react-icons/io";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ListadoEstudiantes from "../ListadoEstudiantes";
 import Inhabilitar from "../Inhabilitar";
 import CrearGrupoModal from "../../Cursos/CrearGrupoModal";
@@ -19,11 +19,46 @@ import {device} from "../../../Breakpoints/breakpoints.js";
 
 const Grupos = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const nivel = location.state?.nivel;
   const [showEstudiantes, setShowEstudiantes] = useState(false);
   const [showInhabilitar, setShowInhabilitar] = useState(false);
   const [showCrearGrupo, setShowCrearGrupo] = useState(false);
+  const [gruposData, setGruposData] = useState({ grupos: [], resumen: null });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const {usuario} = useOutletContext();
+
+  useEffect(() => {
+    if (!nivel) {
+      navigate("/main/cursos");
+      return;
+    }
+
+    const fetchGrupos = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/main/grupos/${nivel}`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al obtener los grupos');
+        }
+
+        const data = await response.json();
+        console.log('Grupos obtenidos:', data);
+        setGruposData(data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error:', err);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchGrupos();
+  }, [nivel, navigate]);
 
   const getRole = (usuario) => {
     if(usuario.rol === "administrador") {
@@ -48,87 +83,53 @@ const Grupos = () => {
     navigate("/main/grupos_historicos");
   }
 
+  if (loading) return <p>Cargando grupos...</p>;
+  if (error) return <p>Error al cargar los grupos: {error}</p>;
+
   return (
-  <Container>
-    <Titulo>
-      Grupos creados
-      <Buttons className="regresar" onClick={regresarOption}>Regresar</Buttons>
-    </Titulo>
+    <Container>
+      <Titulo>
+        Portugués {nivel} - Grupos creados
+        <Buttons className="regresar" onClick={regresarOption}>Regresar</Buttons>
+      </Titulo>
 
-    {gruposInfo.map((grupo, index) => (
-      <GroupContainer key={index}>
-        <h3>{grupo.titulo}</h3>
-        <p>Docente: {grupo.docente}</p>
-        <p>Cantidad de estudiantes: {grupo.cantidadEstudiantes}</p>
-        <p>Fecha de creación: {grupo.fechaCreacion}</p>
-        <p>Horario: {grupo.horario}</p>
-        <ButtonGroup>
-          <Buttons className="estudiantes" onClick={() => setShowEstudiantes(true)}>Ver estudiantes</Buttons>
-          <Buttons className="inactivar" onClick={() => setShowInhabilitar(true)}>Inhabilitar</Buttons>
-        </ButtonGroup>
-      </GroupContainer>
-    ))}
+      {gruposData.grupos.length === 0 ? (
+        <p>No hay grupos creados para este nivel.</p>
+      ) : (
+        gruposData.grupos.map((grupo, index) => (
+          <GroupContainer key={index}>
+            <h3>Grupo {grupo.nGrupo}</h3>
+            <p>Docente: {grupo.email}</p>
+            <p>Horario: {grupo.hora}</p>
+            <p>Fecha: {new Date(grupo.fecha).toLocaleDateString()}</p>
+            <p>Estado: {grupo.estado ? 'Activo' : 'Inactivo'}</p>
+            <ButtonGroup>
+              <Buttons className="estudiantes" onClick={() => setShowEstudiantes(true)}>Ver estudiantes</Buttons>
+              <Buttons className="inactivar" onClick={() => setShowInhabilitar(true)}>Inhabilitar</Buttons>
+            </ButtonGroup>
+          </GroupContainer>
+        ))
+      )}
 
-
-    {role === "Profesor" ? (
-      <GroupContainer className="additionalButtons">
-        <Buttons className="agregarButton" onClick={() => setShowCrearGrupo(true)}>Crear grupo<IoMdAdd /></Buttons>
-        <Buttons className="agregarButton" onClick={iraHistorial}>Historial de grupos<FaHistory /></Buttons>
-      </GroupContainer>
-    ) : (
+      {role === "Profesor" ? (
+        <GroupContainer className="additionalButtons">
+          <Buttons className="agregarButton" onClick={() => setShowCrearGrupo(true)}>Crear grupo<IoMdAdd /></Buttons>
+          <Buttons className="agregarButton" onClick={iraHistorial}>Historial de grupos<FaHistory /></Buttons>
+        </GroupContainer>
+      ) : (
         <GroupContainer className="additionalButtons">
           <Buttons className="agregarButton" onClick={iraHistorial}>Historial de grupos<FaHistory /></Buttons>
         </GroupContainer>
+      )}
 
-    )}
-
-    {showEstudiantes && <ListadoEstudiantes setShowEstudiantes={setShowEstudiantes}/>}
-    {showInhabilitar && <Inhabilitar setShowInhabilitar={setShowInhabilitar}/>}
-    {showCrearGrupo && <CrearGrupoModal setShowCrearGrupoModal={setShowCrearGrupo}/>}
-  </Container>
-  )
+      {showEstudiantes && <ListadoEstudiantes setShowEstudiantes={setShowEstudiantes}/>}
+      {showInhabilitar && <Inhabilitar setShowInhabilitar={setShowInhabilitar}/>}
+      {showCrearGrupo && <CrearGrupoModal setShowCrearGrupoModal={setShowCrearGrupo}/>}
+    </Container>
+  );
 }
 
 export default Grupos
-
-const gruposInfo = [
-  {
-    titulo:"Grupo 1",
-    docente:"Mariano Ospina",
-    cantidadEstudiantes:"25",
-    fechaCreacion:"12-01-2024",
-    horario:"6 pm - 8 pm",
-    estado:"activo",
-    id:""
-  },
-  {
-    titulo:"Grupo 2",
-    docente:"Alejo Ospina",
-    cantidadEstudiantes:"30",
-    fechaCreacion:"12-01-2024",
-    horario:"6 pm - 8 pm",
-    estado:"activo",
-    id:""
-  },
-  {
-    titulo:"Grupo 3",
-    docente:"Juan Manuel Santos",
-    cantidadEstudiantes:"25",
-    fechaCreacion:"12-01-2024",
-    horario:"6 pm - 8 pm",
-    estado:"activo",
-    id:""
-  },
-  {
-    titulo:"Grupo 4",
-    docente:"Silvana Lopez",
-    cantidadEstudiantes:"25",
-    fechaCreacion:"12-01-2024",
-    horario:"6 pm - 8 pm",
-    estado:"activo",
-    id:""
-  },
-];
 
 const Container = styled.div`
     padding: 2.5rem;
@@ -232,5 +233,3 @@ const Buttons = styled.button`
     }
   }
 `
-
-

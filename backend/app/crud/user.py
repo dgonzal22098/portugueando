@@ -18,26 +18,20 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
 
 
 def create_user(db: Session, user: schemas.UserCreate):
-    # En una app real, hash la contraseña
-    hashed_password = user.password
     db_user = models.User(
         name=user.name,
         email=user.email,
-        hashed_password=hashed_password
+        rol=user.rol,  # Usa el rol proporcionado por la API
+        estado=user.estado if hasattr(user, 'estado') else 1  # Estado activo por defecto
     )
     db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
-
-def update_user_password(db: Session, user_id: int, new_password: str):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if user:
-        # En una aplicación real, deberías hashear la contraseña
-        user.hashed_password = new_password
+    try:
         db.commit()
-        return user
-    return None
+        db.refresh(db_user)
+        return db_user
+    except Exception as e:
+        db.rollback()
+        raise e
 
 def create_coleccion(db: Session, coleccion: schemas.ColeccionCreate):
     # Solución temporal: crear un diccionario con solo los campos que existen en la base de datos

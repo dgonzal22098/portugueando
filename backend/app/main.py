@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from .api.routes import router
+from .models import user as models
 from .database import engine
-from . import models
-from .api.routes import users
 
 # Crear tablas en la base de datos
 models.Base.metadata.create_all(bind=engine)
@@ -13,25 +13,25 @@ app = FastAPI(title="Backend API")
 # Configuración de CORS
 origins = [
     "http://localhost:5173",  # Frontend Vite
-    "http://localhost:3000",  # Otros puertos si son necesarios
+    "http://localhost:3000",  # Metabase
+    "http://127.0.0.1:5173",  # Frontend alternativo
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,  # Importante para las cookies
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],  # Permitir exponer headers al frontend
 )
 
-# Incluir rutas
-app.include_router(users.router)
+# Incluir todas las rutas
+app.include_router(router)
 
 # Ruta raíz para verificación
 @app.get("/")
 async def root():
-    return {"message": "API is running"}
+    return {"message": "API Portugueando"}
 
 if __name__ == "__main__":
     import uvicorn

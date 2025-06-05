@@ -1,8 +1,9 @@
 import { Outlet, useLocation} from 'react-router-dom';
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useMemo} from 'react'
 import {LateralMenu, Footer} from '../../componentes'
 import styled from 'styled-components';
 import {device} from "../../Breakpoints/breakpoints.js"
+import axios from 'axios';
 
 // Este seria el modulo principal donde se navega y se define el usuario.
 // Rol: Todos
@@ -15,21 +16,42 @@ const Main = () => {
   const [usuario, setUsuario] = useState(null);
   const location = useLocation();
 
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
-
   useEffect(() => {
     const usuarioAlmacenado = localStorage.getItem('usuarioLogueado');
-
     if (usuarioAlmacenado) {
-      const userData = JSON.parse(usuarioAlmacenado);
-      console.log('Usuario cargado:', userData); // Para debugging
-      setUsuario(userData);
+      try {
+        const userData = JSON.parse(usuarioAlmacenado);
+        console.log('Usuario cargado:', userData); // Para debugging
+        setUsuario(userData);
+      } catch (error) {
+        console.error('Error al parsear usuario:', error);
+      }
     } else {
       console.log('No hay usuario almacenado en localStorage');
     }
   }, []);
+
+  useEffect(() => {
+    const verificarSesion = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/verificar-sesion/');
+        console.log('Datos de sesión:', response.data);
+        setUsuario({
+          ...response.data,
+          rol: response.data.rol // Asegurarse de que el rol se incluya
+        });
+      } catch (error) {
+        console.error('Error al verificar sesión:', error);
+      }
+    };
+
+    verificarSesion();
+  }, []);
+
+  const contextValue = useMemo(() => ({
+    usuario,
+    setUsuario
+  }), [usuario]);
 
   if (!usuario) {
     return <div>Cargando usuario...</div>;
@@ -37,21 +59,21 @@ const Main = () => {
 
   // Para debugging
   console.log('Usuario en Main:', usuario);
-  console.log('Usuario.user:', usuario?.user);
+  console.log('Rol del usuario:', usuario.rol);
 
   return (
     <Container>
       <div className="sidebarState">
         <LateralMenu
           isOpen={isOpen}
-          showSideBar={toggleSidebar}
+          showSideBar={() => setIsOpen(!isOpen)}
           data={usuario}
         />
-        <Outlet context={{usuario}}/>
+        <Outlet context={contextValue} />
       </div>
       <Footer />
     </Container>
-  )
+  );
 }
 
 export default Main

@@ -1,118 +1,205 @@
 import styled from "styled-components";
 import { IoClose } from "react-icons/io5";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {device} from "../../../Breakpoints/breakpoints.js";
+import { useOutletContext } from "react-router-dom";
 
-// Modal de crear un nuevo grupo en un curso
-// Rol: Administrador
-// Logica: Desde aca se debe enviar la informacion del nuevo grupo a la base de datos para que se actualice y se muestre de forma exitosa. Se deben traer los datos de los docentes registrados para que se pueda seleccionar en el nuevo grupo y si no hay un docente registrado redirige al admin a la pagina de registro de docente.
-// Pendiente: Faltaria realizar la logica de crear un nuevo grupo en este componente y el pop up de cuando se haya creado de forma exitosa. Revisar la logica de cuando no hay docentes registrados para que lo redirija a la pagina de registro.
-
-const CrearGrupoModal = ({ setShowCrearGrupoModal }) => {
+const CrearGrupoModal = ({ setShowCrearGrupoModal, nivel }) => {
+    const {usuario} = useOutletContext();
     const [showConfirmation, setShowConfirmation] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [profesores, setProfesores] = useState([]);
     const [groupInfo, setGroupInfo] = useState({
-        numero: "",
-        docente: "",
-        horario: "",
+        nGrupo: "",
+        email: "",
+        hora: "",
+        fecha: new Date().toISOString().split('T')[0],
+        nivel: nivel,
+        lider: true,
+        estado: true
     });
 
-    const handleContinuar = () => {
-        const {numero, docente, horario} = groupInfo;
+    // Cargar la lista de profesores
+    useEffect(() => {
+        const fetchProfesores = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/main/registro_profesor/', {
+                    credentials: 'include'
+                });
+                if (!response.ok) throw new Error('Error al cargar profesores');
+                const data = await response.json();
+                const profesoresActivos = data.filter(prof => prof.estado === 1);
+                setProfesores(profesoresActivos);
+            } catch (err) {
+                console.error('Error:', err);
+                setError('Error al cargar la lista de profesores');
+            }
+        };
 
-        if (!numero || !docente || !horario) {
-            alert('Todos os campos são obrigatórios.');
+        fetchProfesores();
+    }, []);
+
+    const handleContinuar = () => {
+        const {nGrupo, email, hora, fecha} = groupInfo;
+
+        if (!nGrupo || !email || !hora || !fecha) {
+            setError('Todos los campos son obligatorios.');
             return;
         }
 
         setShowConfirmation(true);
-    }
+        setError(null);
+    };
+
+    const handleConfirmar = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch('http://localhost:8000/main/grupos/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    nGrupo: parseInt(groupInfo.nGrupo),
+                    email: groupInfo.email,
+                    hora: groupInfo.hora,
+                    fecha: groupInfo.fecha,
+                    nivel: parseInt(nivel),
+                    lider: true,
+                    estado: true
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Error al crear el grupo');
+            }
+
+            // Mostrar mensaje de éxito y cerrar el modal
+            alert('Grupo creado exitosamente');
+            setShowCrearGrupoModal(false);
+            // Recargar la página para ver los cambios
+            window.location.reload();
+
+        } catch (err) {
+            setError(err.message);
+            console.error('Error:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleChange = (e) => {
         const {name, value} = e.target;
         setGroupInfo(prev => ({
             ...prev,
-            [name]:value
+            [name]: value
         }));
     };
   
     return (
     <Overlay onClick={() => setShowCrearGrupoModal(false)}>
-      
       <Modal onClick={(e) => e.stopPropagation()}>
-        
         <CloseButton onClick={() => setShowCrearGrupoModal(false)}>
           <IoClose size={24} />
         </CloseButton>
 
         <h2 style={{margin:"2rem 2rem 0 0"}}>Nuevo grupo</h2>
         
-        {/* el numero del grupo se debe calcular al contar los grupos que ya hayan sido creados con anterioridad y de ese modo se podra seleccionar el disponible */}
-        
-        {showConfirmation ? 
-        <Confirmation>
-            <Title>Detalles del nuevo grupo</Title>
-            <p><span>Grupo: </span>{groupInfo.numero}</p>
-            <p><span>Docente: </span>{groupInfo.docente}</p>
-            <p><span>Horario: </span>{groupInfo.horario}</p>
-        </Confirmation>
-        :
-        <FormContainer>
-            <Select 
-            name="numero"
-            className="classicSelectStyle" defaultValue=""
-            onChange={handleChange}
-            required
-            >
-                <option value="" disabled>Seleccione el número del grupo</option>
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-            </Select>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
 
-    {/* los profesores se traen de la base de datos, alli se agregaron y registraron los docentes participantes en el semestre academico */}
+        {showConfirmation ? (
+            <Confirmation>
+                <Title>Detalles del nuevo grupo</Title>
+                <p><strong>Grupo:</strong> {groupInfo.nGrupo}</p>
+                <p><strong>Docente:</strong> {groupInfo.email}</p>
+                <p><strong>Horario:</strong> {groupInfo.hora}</p>
+                <p><strong>Fecha:</strong> {groupInfo.fecha}</p>
+            </Confirmation>
+        ) : (
+            <FormContainer>
+                <Select
+                    name="nGrupo"
+                    value={groupInfo.nGrupo}
+                    onChange={handleChange}
+                    required
+                >
+                    <option value="" disabled>Seleccione el número del grupo</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                </Select>
 
-            <Select
-                required
-                name="docente"
-                className="classicSelectStyle" defaultValue=""
-                onChange={handleChange}>
+                <Select
+                    name="email"
+                    value={groupInfo.email}
+                    onChange={handleChange}
+                    required
+                >
                     <option value="" disabled>Seleccione el docente</option>
-                    <option>Andres galpon</option>
-                    <option>federico sancocho</option>
-                    <option>gabriela sierra</option>
-            </Select>
+                    {profesores.map((profesor) => (
+                        <option key={profesor.email} value={profesor.email}>
+                            {profesor.name}
+                        </option>
+                    ))}
+                </Select>
 
-            {/* los horarios se traen de la base de datos que estan establecidas por defecto o los que el administrador desee agregar */}
-            <Select
-            required
-            name="horario"
-            className="classicSelectStyle" defaultValue=""
-            onChange={handleChange}>
-                <option value="" disabled>
-                    Seleccione el horario
-                </option>
-                <option>4 - 6 pm</option>
-                <option>6 - 8 pm</option>
-                <option>8 - 10 pm</option>
-            </Select>
-        </FormContainer>
-        }
-        
+                <Select
+                    name="hora"
+                    value={groupInfo.hora}
+                    onChange={handleChange}
+                    required
+                >
+                    <option value="" disabled>Seleccione el horario</option>
+                    <option value="4-6">4 - 6 pm</option>
+                    <option value="6-8">6 - 8 pm</option>
+                    <option value="8-10">8 - 10 pm</option>
+                </Select>
+
+                <input
+                    type="date"
+                    name="fecha"
+                    value={groupInfo.fecha}
+                    onChange={handleChange}
+                    required
+                    style={{
+                        width: '100%',
+                        padding: '1em',
+                        borderRadius: '5px',
+                        border: '1px solid #D9D9D9',
+                        font: 'inherit'
+                    }}
+                />
+            </FormContainer>
+        )}
+
         <ButtonGroup>
+            {showConfirmation ? (
+                <Button
+                    onClick={handleConfirmar}
+                    disabled={loading}
+                >
+                    {loading ? 'Creando...' : 'Confirmar'}
+                </Button>
+            ) : (
+                <Button onClick={handleContinuar}>Continuar</Button>
+            )}
 
-            {showConfirmation ? 
-            <Button onClick={() => setShowCrearGrupoModal(false)}>Confirmar</Button> 
-            : 
-            <Button onClick={handleContinuar}>Continuar</Button>}
-            
-            <Button className="cancel" onClick={() => setShowCrearGrupoModal(false)}>Cancelar</Button>
-
+            <Button
+                className="cancel"
+                onClick={() => setShowCrearGrupoModal(false)}
+                disabled={loading}
+            >
+                Cancelar
+            </Button>
         </ButtonGroup>
-
       </Modal>
-
     </Overlay>
-  );
+    );
 };
 
 export default CrearGrupoModal;
@@ -247,4 +334,13 @@ const Title = styled.h2`
   font-weight: bold;
   text-align: center;
   font-size: 1.2rem;
+`;
+const ErrorMessage = styled.div`
+    color: #cc0000;
+    background-color: #ffe6e6;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    border: 1px solid #ffcccc;
+    text-align: center;
 `;

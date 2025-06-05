@@ -1,8 +1,27 @@
 import logging
 
-from fastapi import APIRouter, Depends, Cookie, Response, HTTPException
+from fastapi import APIRouter, Depends, Cookie, Response, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+
+import io
+from pydantic import BaseModel
+
+
+from fastapi import APIRouter, HTTPException
+from typing import List
+from datetime import datetime
+from sqlalchemy.orm import Session
+from fastapi import Depends
+from ...database import get_db
+from ... import models, schemas
+import logging
+
+
+from fastapi.responses import StreamingResponse
+from io import BytesIO
+
+import pandas as pd
 
 from ... import schemas
 
@@ -259,24 +278,38 @@ async def reset_password(
     return {"message": "Contraseña actualizada correctamente"}
 
 # app/routers/users.py
-@router.get("/main/registro_profesor/", response_model=List[dict])
+@router.get("/main/registro_profesor/")
 def read_profesores(db: Session = Depends(get_db)):
+    logger.info("Recibida petición GET para listar profesores")
     try:
+        # Consultando específicamente usuarios con rol "Profesor"
         profesores = db.query(models.User).filter(
             models.User.rol == "Profesor"
         ).all()
 
-        return [
-            {
-                "namepro": profesor.name,
-                "emailpro": profesor.email,
-                "estado": profesor.estado
-            }
-            for profesor in profesores
-        ]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.info(f"Encontrados {len(profesores)} profesores")
 
+        # Asegurarse de que todos los campos necesarios estén incluidos
+        resultado = []
+        for profesor in profesores:
+            profesor_dict = {
+                "id": profesor.id,
+                "name": profesor.name,
+                "email": profesor.email,
+                "estado": profesor.estado,
+                "rol": "Profesor",  # Asegurarse de que el rol sea "Profesor"
+            }
+            resultado.append(profesor_dict)
+            logger.info(f"Profesor procesado: {profesor_dict}")
+
+        return resultado
+
+    except Exception as e:
+        logger.error(f"Error al obtener profesores: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al obtener profesores: {str(e)}"
+        )
 
 @router.get("/main/dashboard", response_model=List[EstudianteNivel])
 def read_students_detail(db: Session = Depends(get_db)):
@@ -375,11 +408,35 @@ def read_colecciones(grupo_id: Optional[int] = None, db: Session = Depends(get_d
     try:
         query = db.query(Coleccion)
         if (grupo_id):
+            logger.info(f"Filtrando por grupo_id: {grupo_id}")
             query = query.filter(Coleccion.grupo_id == grupo_id)
+        logger.info("Ejecutando consulta...")
         colecciones = query.all()
-        return colecciones
+        logger.info(f"Encontradas {len(colecciones)} colecciones")
+
+        # Convertir a diccionario antes de retornar para validar la estructura
+        result = []
+        for col in colecciones:
+            result.append({
+                "id": col.id,
+                "nombre": col.nombre,
+                "categoria": col.categoria,
+                "grupo_id": col.grupo_id,
+                "contenidos": [] if not hasattr(col, 'contenidos') else [
+                    {
+                        "id": c.id,
+                        "nombre": c.nombre,
+                        "categorias": c.categorias,
+                        "url": c.url,
+                        "coleccion_id": c.coleccion_id
+                    } for c in col.contenidos
+                ]
+            })
+        return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error al obtener colecciones: {str(e)}")
+        logger.exception("Detalles completos del error:")
+        raise HTTPException(status_code=500, detail=f"Error al obtener colecciones: {str(e)}")
 
 @router.post("/main/material_apoyo/", response_model=ColeccionResponse)
 def crear_coleccion(coleccion: ColeccionCreate, db: Session = Depends(get_db)):
@@ -436,7 +493,8 @@ def obtener_contenido(coleccion_id: int, contenido_id: int, db: Session = Depend
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-async def send_otp_email(email: str, otp: str):
+async def send_otp_email(email: str, otp: str, max_retries=3):
+    logger.info(f"Intentando enviar OTP a {email}")
     message = MIMEMultipart()
     message["From"] = EMAIL_USER
     message["To"] = email
@@ -455,65 +513,77 @@ async def send_otp_email(email: str, otp: str):
     """
     message.attach(MIMEText(body, "html"))
 
-    try:
-        # Verificar conectividad DNS
+    for attempt in range(max_retries):
         try:
-            socket.gethostbyname(EMAIL_HOST)
-        except socket.gaierror as e:
-            logger.error(f"Error de resolución DNS para {EMAIL_HOST}: {e}")
-            return False, f"Error de DNS: No se puede resolver {EMAIL_HOST}"
+            server = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT, timeout=30)
+            server.set_debuglevel(1)
+            logger.info("Conectado al servidor SMTP")
 
-        server = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
-        server.set_debuglevel(1)  # Habilitar debugging
-        logger.info("Conectado al servidor SMTP")
+            server.starttls()
+            logger.info("TLS iniciado")
 
-        server.starttls()
-        logger.info("TLS iniciado")
+            server.login(EMAIL_USER, EMAIL_PASSWORD)
+            logger.info("Login exitoso")
 
-        server.login(EMAIL_USER, EMAIL_PASSWORD)
-        logger.info("Login exitoso")
+            server.send_message(message)
+            logger.info(f"Correo enviado exitosamente a {email}")
 
-        server.send_message(message)
-        logger.info(f"Correo enviado exitosamente a {email}")
+            server.quit()
+            return True, "Correo enviado exitosamente"
 
-        server.quit()
-        return True, "Correo enviado exitosamente"
-    except smtplib.SMTPAuthenticationError as e:
-        logger.error(f"Error de autenticación SMTP: {e}")
-        return False, "Error de autenticación con el servidor de correo"
-    except smtplib.SMTPException as e:
-        logger.error(f"Error SMTP: {e}")
-        return False, f"Error SMTP: {str(e)}"
-    except Exception as e:
-        logger.error(f"Error inesperado al enviar correo: {e}")
-        return False, f"Error inesperado: {str(e)}"
+        except smtplib.SMTPAuthenticationError as e:
+            logger.error(f"Error de autenticación SMTP: {e}")
+            return False, "Error de autenticación con el servidor de correo"
+        except smtplib.SMTPException as e:
+            logger.error(f"Error SMTP en intento {attempt + 1}: {e}")
+            if attempt == max_retries - 1:
+                return False, f"Error SMTP: {str(e)}"
+        except Exception as e:
+            logger.error(f"Error inesperado en intento {attempt + 1}: {e}")
+            if attempt == max_retries - 1:
+                return False, f"Error inesperado: {str(e)}"
+
+    return False, "No se pudo enviar el correo después de varios intentos"
 
 @router.post("/request-otp/")
 async def request_otp(email: schemas.EmailSchema, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    if not email.email.endswith('@universidadean.edu.co'):
-        raise HTTPException(
-            status_code=400,
-            detail="Solo se permiten correos institucionales de la Universidad EAN"
-        )
+    try:
+        logger.info(f"Solicitud de OTP recibida para: {email.email}")
 
-    # Generar código OTP
-    otp = generate_otp()
+        if not email.email.endswith('@universidadean.edu.co'):
+            raise HTTPException(
+                status_code=400,
+                detail="Solo se permiten correos institucionales de la Universidad EAN"
+            )
 
-    # Intentar enviar el correo
-    success, error_message = await send_otp_email(email.email, otp)
+        # Generar código OTP
+        otp = generate_otp()
+        logger.info(f"OTP generado para {email.email}")
 
-    if not success:
-        logger.error(f"Error al enviar OTP a {email.email}: {error_message}")
+        # Intentar enviar el correo
+        success, error_message = await send_otp_email(email.email, otp)
+
+        if not success:
+            logger.error(f"Error al enviar OTP a {email.email}: {error_message}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"No se pudo enviar el código de verificación: {error_message}"
+            )
+
+        # Almacenar el OTP solo si el correo se envió exitosamente
+        store_otp(email.email, otp)
+        logger.info(f"OTP almacenado exitosamente para {email.email}")
+
+        return {"message": "Código de verificación enviado al correo"}
+
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        logger.error(f"Error inesperado en request_otp: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"No se pudo enviar el código de verificación: {error_message}"
+            detail=f"Error interno del servidor: {str(e)}"
         )
-
-    # Solo almacenar el OTP si el correo se envió exitosamente
-    store_otp(email.email, otp)
-    logger.info(f"OTP almacenado exitosamente para {email.email}")
-
-    return {"message": "Código de verificación enviado al correo"}
 
 @router.post("/verify-otp/")
 async def verify_otp_login(verification_data: schemas.OTPVerification, db: Session = Depends(get_db)):
@@ -529,8 +599,7 @@ async def verify_otp_login(verification_data: schemas.OTPVerification, db: Sessi
         # Crear nuevo usuario si no existe
         user_create = schemas.UserCreate(
             email=verification_data.email,
-            name=verification_data.email.split('@')[0],  # Usar parte del email como nombre
-            password="",  # No se necesita contraseña con OTP
+            name=verification_data.email.split('@')[0],
             rol="Estudiante"  # Rol por defecto
         )
         user = crud_user.create_user(db, user_create)
@@ -541,15 +610,18 @@ async def verify_otp_login(verification_data: schemas.OTPVerification, db: Sessi
         expires_delta=timedelta(days=1)
     )
 
-    # Crear datos de sesión (convertir datetime a string ISO)
+    # Crear datos de sesión
     expiry_time = datetime.utcnow() + timedelta(days=1)
     session_data = {
         "id": user.id,
         "name": user.name,
         "email": user.email,
         "rol": user.rol,
-        "exp": expiry_time.isoformat()  # Convertir a string ISO
+        "exp": expiry_time.isoformat()
     }
+
+    # Serializar datos de sesión para la cookie
+    session_token = serializer.dumps(session_data)
 
     # Crear respuesta con los datos del usuario
     response_data = {
@@ -563,20 +635,457 @@ async def verify_otp_login(verification_data: schemas.OTPVerification, db: Sessi
         }
     }
 
-    # Serializar datos de sesión para la cookie
-    session_token = serializer.dumps(session_data)
-
-    # Crear respuesta
     response = JSONResponse(content=response_data)
-
-    # Configurar cookie de sesión
     response.set_cookie(
         key="session",
         value=session_token,
         httponly=True,
         secure=False,  # Cambiar a True en producción con HTTPS
         samesite="lax",
-        max_age=86400  # 24 horas en segundos
+        max_age=86400
     )
 
     return response
+
+@router.post("/main/registro_profesor/")
+def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = crud_user.get_user(db, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail="El correo ya está registrado")
+
+    try:
+        new_user = crud_user.create_user(db, user)
+        return {
+            "id": new_user.id,
+            "email": new_user.email,
+            "name": new_user.name,
+            "rol": new_user.rol,
+            "estado": new_user.estado
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/main/profesor/estado/{profesor_id}")
+def update_profesor_estado(
+    profesor_id: int,
+    estado_data: dict,
+    db: Session = Depends(get_db)
+):
+    try:
+        # Obtener el profesor
+        profesor = db.query(models.User).filter(
+            models.User.id == profesor_id,
+            models.User.rol == "Profesor"
+        ).first()
+
+        if not profesor:
+            raise HTTPException(status_code=404, detail="Profesor no encontrado")
+
+        # Actualizar el estado
+        profesor.estado = estado_data.get("estado", 0)
+        db.commit()
+
+        return {
+            "message": "Estado actualizado correctamente",
+            "profesor": {
+                "id": profesor.id,
+                "name": profesor.name,
+                "email": profesor.email,
+                "estado": profesor.estado
+            }
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/main/grupos/{nivel}")
+def get_grupos_by_nivel(nivel: int, db: Session = Depends(get_db)):
+    try:
+        logger.info(f"Obteniendo grupos para el nivel {nivel}")
+
+        # Construir y ejecutar la consulta para grupos donde el profesor es líder
+        query = db.query(models.Grupo).filter(
+            models.Grupo.nivel == nivel,
+            models.Grupo.lider == True
+        )
+
+        logger.info(f"Query SQL real: {str(query.statement)}")
+
+        grupos = query.all()
+        logger.info(f"Número de grupos encontrados: {len(grupos)}")
+
+        if not grupos:
+            # Intentar una consulta directa para verificar la tabla
+            result = db.execute(text("SELECT COUNT(*) as count FROM grupo WHERE lider = TRUE AND nivel = :nivel"),
+                              {"nivel": nivel}).scalar()
+            logger.info(f"Total de grupos con nivel {nivel} y líder: {result}")
+
+            return {
+                "grupos": [],
+                "resumen": {
+                    "nivel": nivel,
+                    "total_grupos": 0,
+                    "grupos_activos": 0,
+                    "grupos_inactivos": 0
+                }
+            }
+
+        # Convertir los grupos a diccionarios
+        grupos_data = []
+        for grupo in grupos:
+            grupo_dict = {
+                "id_grupo": grupo.id_grupo,
+                "email": grupo.email,
+                "nGrupo": grupo.nGrupo,
+                "hora": grupo.hora,
+                "fecha": str(grupo.fecha) if grupo.fecha else None,
+                "nivel": grupo.nivel,
+                "estado": grupo.estado
+            }
+            grupos_data.append(grupo_dict)
+            logger.info(f"Grupo procesado: {grupo_dict}")
+
+        # Contar grupos activos e inactivos
+        grupos_activos = len([g for g in grupos if g.estado])
+        grupos_inactivos = len([g for g in grupos if not g.estado])
+
+        resultado = {
+            "grupos": grupos_data,
+            "resumen": {
+                "nivel": nivel,
+                "total_grupos": len(grupos),
+                "grupos_activos": grupos_activos,
+                "grupos_inactivos": grupos_inactivos
+            }
+        }
+
+        logger.info(f"Resultado final: {resultado}")
+        return resultado
+
+    except Exception as e:
+        logger.error(f"Error al obtener grupos del nivel {nivel}: {str(e)}")
+        logger.exception("Detalles completos del error:")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al obtener grupos: {str(e)}"
+        )
+
+@router.get("/main/grupos_historicos")
+def get_grupos_historicos(db: Session = Depends(get_db), semestre_actual: str = None):
+    try:
+        logger.info("Obteniendo grupos históricos")
+
+        # Obtener la fecha actual
+        fecha_actual = datetime.now()
+
+        # Construir la consulta base
+        query = db.query(models.Grupo)
+
+        # Si se proporciona un semestre_actual, filtrar por semestre
+        if semestre_actual:
+            query = query.filter(models.Grupo.semestre != semestre_actual)
+        else:
+            # Si no hay semestre especificado, usar la fecha como criterio
+            query = query.filter(models.Grupo.fecha < fecha_actual)
+
+        # Ejecutar la consulta
+        grupos = query.all()
+
+        # Convertir los grupos a diccionarios
+        grupos_data = [
+            {
+                "id_grupo": grupo.id_grupo,
+                "email": grupo.email,
+                "nGrupo": grupo.nGrupo,
+                "hora": grupo.hora,
+                "fecha": str(grupo.fecha) if grupo.fecha else None,
+                "nivel": grupo.nivel,
+                "estado": grupo.estado
+            } for grupo in grupos
+        ]
+
+        logger.info(f"Grupos históricos encontrados: {len(grupos_data)}")
+        return grupos_data
+
+    except Exception as e:
+        logger.error(f"Error al obtener grupos históricos: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al obtener grupos históricos: {str(e)}"
+        )
+
+@router.get("/grupos/{grupo_id}/estudiantes", response_model=List[schemas.UserBase])
+def get_estudiantes_grupo(grupo_id: int, db: Session = Depends(get_db)):
+    """Obtiene los estudiantes asignados a un grupo específico (histórico)"""
+    # Consulta SQL para obtener estudiantes del grupo
+    query = text("""
+        SELECT DISTINCT u.* 
+        FROM users u
+        JOIN estudiante_grupo eg ON u.email = eg.email_estudiante
+        WHERE eg.id_grupo = :grupo_id
+    """)
+
+    result = db.execute(query, {"grupo_id": grupo_id})
+    estudiantes = [dict(row) for row in result]
+
+    if not estudiantes:
+        raise HTTPException(
+            status_code=404,
+            detail="No se encontraron estudiantes para este grupo"
+        )
+
+    return estudiantes
+
+@router.get("/main/grupos/{grupo_id}/estudiantes/excel")
+def download_estudiantes_excel(grupo_id: int, db: Session = Depends(get_db)):
+    """Descarga la lista de estudiantes de un grupo en formato Excel"""
+
+    try:
+        # Consulta SQL para obtener estudiantes del grupo
+        query = text("""
+            SELECT DISTINCT u.name as nombre, u.email as correo
+            FROM users u
+            JOIN estudiante_grupo eg ON u.email = eg.email_estudiante
+            WHERE eg.id_grupo = :grupo_id
+        """)
+
+        result = db.execute(query, {"grupo_id": grupo_id})
+        estudiantes = [dict(row) for row in result]
+
+        if not estudiantes:
+            raise HTTPException(
+                status_code=404,
+                detail="No se encontraron estudiantes para este grupo"
+            )
+
+        # Crear DataFrame y exportar a Excel
+        df = pd.DataFrame(estudiantes)
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            df.to_excel(writer, sheet_name='Estudiantes', index=False)
+
+        output.seek(0)
+
+        headers = {
+            'Content-Disposition': f'attachment; filename=estudiantes_grupo_{grupo_id}.xlsx'
+        }
+
+        return StreamingResponse(
+            output,
+            media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            headers=headers
+        )
+
+    except Exception as e:
+        logger.error(f"Error al generar Excel para grupo {grupo_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/main/grupos/")
+def create_grupo(grupo: schemas.GrupoCreate, db: Session = Depends(get_db)):
+    """Crear un nuevo grupo"""
+    try:
+        logger.info("Creando nuevo grupo")
+
+        # Crear el grupo usando SQLAlchemy
+        nuevo_grupo = models.Grupo(
+            nGrupo=grupo.nGrupo,
+            email=grupo.email,
+            hora=grupo.hora,
+            fecha=grupo.fecha,
+            nivel=grupo.nivel,
+            lider=grupo.lider,
+            estado=grupo.estado
+        )
+
+        db.add(nuevo_grupo)
+        db.commit()
+        db.refresh(nuevo_grupo)
+
+        logger.info(f"Grupo creado exitosamente: {nuevo_grupo.id_grupo}")
+
+        return {
+            "id_grupo": nuevo_grupo.id_grupo,
+            "nGrupo": nuevo_grupo.nGrupo,
+            "email": nuevo_grupo.email,
+            "hora": nuevo_grupo.hora,
+            "fecha": nuevo_grupo.fecha,
+            "nivel": nuevo_grupo.nivel,
+            "estado": nuevo_grupo.estado
+        }
+
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error al crear grupo: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al crear grupo: {str(e)}"
+        )
+
+@router.get("/api/grupos/nivel/{nivel}")
+def get_grupos_by_nivel_alias(nivel: int, db: Session = Depends(get_db)):
+    """Alias de la ruta /main/grupos/{nivel} para mantener compatibilidad con el frontend"""
+    return get_grupos_by_nivel(nivel, db)
+
+@router.post("/api/upload-students")
+async def upload_students(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Endpoint para cargar una lista de estudiantes desde un archivo CSV directamente a la tabla users.
+    El archivo debe estar separado por punto y coma (;) y contener las columnas:
+    - nombre
+    - email
+    """
+    try:
+        logger.info("Procesando archivo de estudiantes")
+
+        # Leer el contenido del archivo
+        content = await file.read()
+        content = content.decode('utf-8')
+
+        # Procesar el CSV
+        import csv
+        from io import StringIO
+
+        csvfile = StringIO(content)
+        reader = csv.DictReader(csvfile, delimiter=';')
+
+        estudiantes_procesados = []
+        errores = []
+
+        for row in reader:
+            try:
+                email = row['email'].strip().lower()
+                nombre = row['nombre'].strip()
+
+                # Validar el email
+                if not email.endswith('@universidadean.edu.co'):
+                    errores.append(f"Email inválido: {email}")
+                    continue
+
+                # Verificar si el usuario ya existe
+                estudiante_existente = db.query(models.User).filter(models.User.email == email).first()
+
+                if not estudiante_existente:
+                    # Crear nuevo usuario
+                    nuevo_estudiante = models.User(
+                        email=email,
+                        name=nombre,
+                        rol="Estudiante",
+                        estado=1
+                    )
+
+                    db.add(nuevo_estudiante)
+                    estudiantes_procesados.append({
+                        "email": email,
+                        "nombre": nombre,
+                        "estado": "Creado exitosamente"
+                    })
+                    logger.info(f"Nuevo estudiante creado: {email}")
+                else:
+                    estudiantes_procesados.append({
+                        "email": email,
+                        "nombre": nombre,
+                        "estado": "Email ya registrado"
+                    })
+                    logger.info(f"Email ya registrado: {email}")
+
+            except KeyError as e:
+                errores.append(f"Error en el formato del CSV. Falta la columna: {str(e)}")
+                logger.error(f"Error en el formato del CSV: {str(e)}")
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Error en el formato del CSV. Falta la columna: {str(e)}"
+                )
+            except Exception as e:
+                errores.append(f"Error procesando estudiante {email}: {str(e)}")
+                logger.error(f"Error procesando estudiante: {str(e)}")
+
+        # Commit los cambios si todo está bien
+        db.commit()
+        logger.info(f"Proceso completado. {len(estudiantes_procesados)} estudiantes procesados.")
+
+        return {
+            "message": "Archivo procesado correctamente",
+            "estudiantes": estudiantes_procesados,
+            "total_procesados": len(estudiantes_procesados),
+            "errores": errores
+        }
+
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error al procesar archivo: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al procesar el archivo: {str(e)}"
+        )
+
+@router.post("/main/dashboard")
+async def create_caracterizacion(
+    caracterizacion: dict,
+    db: Session = Depends(get_db)
+):
+    """Crear una nueva caracterización de escritura"""
+    try:
+        logger.info("Creando nueva caracterización de escritura")
+
+        # Crear la caracterización usando SQLAlchemy
+        nueva_caracterizacion = models.CaracterizacionEscritura(
+            marca_temporal=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            nome=caracterizacion["nome"],
+            nivel=caracterizacion["nivel"],
+            professor=caracterizacion["profe"],
+            email=caracterizacion["email"],
+            ano_semestre=caracterizacion["semestre"],
+            horario=caracterizacion["horario"],
+            tipo_redacao=caracterizacion["redacao"],
+            corte=caracterizacion["corte"],
+            ss=caracterizacion["ss"],
+            c_cedilha=caracterizacion["c"],
+            rr=caracterizacion["rr"],
+            x=caracterizacion["x"],
+            s=caracterizacion["s"],
+            acento_grave=caracterizacion["agrave"],
+            acento_agudo=caracterizacion["aagudo"],
+            acento_circunflexo=caracterizacion["acircunflexo"],
+            til=caracterizacion["till"],
+            verbos_regulares=caracterizacion["vregulares"],
+            verbos_irregulares=caracterizacion["virregulares"],
+            genero=caracterizacion["genero"],
+            numero=caracterizacion["numero"],
+            virgula=caracterizacion["virgula"],
+            ponto_seguida=caracterizacion["pcontinuo"],
+            ponto_paragrafo=caracterizacion["pparagrafo"],
+            ponto_virgula=caracterizacion["pvergula"],
+            reticencias=caracterizacion["reticencias"],
+            ponto_interrogacao=caracterizacion["pinterrogacao"],
+            ponto_exclamacao=caracterizacion["pexclamacao"],
+            travessao=caracterizacion["travessao"],
+            aspas=caracterizacion["aspas"],
+            parenteses=caracterizacion["parenteses"],
+            usualidade=caracterizacion["usualidade"],
+            portunhol=caracterizacion["portunhol"],
+            extra_terrestre=caracterizacion["extraterrestres"],
+            repeticoes_inadequadas=caracterizacion["rinadecuadas"],
+            ausencia=caracterizacion["ausenciaa"],
+            excesso=caracterizacion["excesso"],
+            ordem=caracterizacion["order"]
+        )
+
+        db.add(nueva_caracterizacion)
+        db.commit()
+        db.refresh(nueva_caracterizacion)
+
+        return {
+            "message": "Caracterización creada exitosamente",
+            "caracterizacion": nueva_caracterizacion
+        }
+
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error al crear caracterización: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al crear caracterización: {str(e)}"
+        )

@@ -1,7 +1,7 @@
 import styled from "styled-components"
 import CursoCard from "./CursoCard"
 import { useNavigate, useOutletContext } from "react-router-dom"
-import { useState} from "react";
+import { useState, useEffect } from "react";
 import CrearGrupoModal from "./CrearGrupoModal";
 import {device} from "../../Breakpoints/breakpoints.js"
 
@@ -13,16 +13,51 @@ import {device} from "../../Breakpoints/breakpoints.js"
 const Cursos = () => {
   const navigate = useNavigate();
   const [showCrearGrupoModal, setShowCrearGrupoModal] = useState(false);
+  const [nivelSeleccionado, setNivelSeleccionado] = useState(null);
   const {usuario} = useOutletContext();
 
-  const iraGrupos = () => {
+  const iraGrupos = (nivel) => {
+    console.log("Navegando con nivel:", nivel);
+    console.log("Usuario:", usuario);
 
-    if (usuario.rol === "Profesor") {
-      navigate("/main/groups_assigned_docente");
-    } else if (usuario.rol === "Administrador"){
-      navigate("/main/grupos");
+    // Obtener el rol ya sea del usuario directamente o del objeto anidado
+    const userRole = usuario?.rol || usuario?.user?.rol;
+
+    if (!userRole) {
+      console.log('Rol no definido, intentando recuperar desde localStorage...');
+      const usuarioAlmacenado = localStorage.getItem('usuarioLogueado');
+      if (usuarioAlmacenado) {
+        try {
+          const userData = JSON.parse(usuarioAlmacenado);
+          const storedRole = userData.rol || userData.user?.rol;
+
+          if (storedRole === "Profesor") {
+            navigate("/main/grupos_docentes_nivel", { state: { nivel } });
+          } else if (storedRole === "Administrador") {
+            navigate("/main/grupos", { state: { nivel } });
+          }
+        } catch (error) {
+          console.error('Error al parsear datos del usuario:', error);
+          navigate('/login');
+        }
+      } else {
+        console.log('No hay datos de usuario, redirigiendo a login');
+        navigate('/login');
+      }
+      return;
     }
-  }
+
+    if (userRole === "Profesor") {
+      navigate("/main/grupos_docentes_nivel", { state: { nivel } });
+    } else if (userRole === "Administrador") {
+      navigate("/main/grupos", { state: { nivel } });
+    }
+  };
+
+  const handleMostrarModal = (nivel) => {
+    setNivelSeleccionado(nivel);
+    setShowCrearGrupoModal(true);
+  };
 
   return (
   <Container>
@@ -33,17 +68,18 @@ const Cursos = () => {
       {titulos.map(
         (titulo, index) => (
           <CursoCard
-
-          key={index} 
+          key={index}
           value={titulo} 
-          toGroups={iraGrupos} 
-          setShowCrearGrupoModal={() => setShowCrearGrupoModal(true)} />
+          toGroups={iraGrupos}
+          setShowCrearGrupoModal={() => handleMostrarModal(index + 1)} />
         ))}
     </CardContainer>
 
     {showCrearGrupoModal && <CrearGrupoModal 
-    setShowCrearGrupoModal={setShowCrearGrupoModal}/>}
-    
+    setShowCrearGrupoModal={setShowCrearGrupoModal}
+    nivel={nivelSeleccionado}
+    />}
+
   </Container>)
 }
 
@@ -87,4 +123,3 @@ const CardContainer = styled.div`
     grid-template-columns: 1fr;
   }
 `
-

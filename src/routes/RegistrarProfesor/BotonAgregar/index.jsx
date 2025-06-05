@@ -7,46 +7,46 @@ import {device} from "../../../Breakpoints/breakpoints.js"
 const BotonAgregar = ({setMostrarFormulario}) => {
 
   return (
-  <>
     <Boton onClick={setMostrarFormulario}>
-      <span>Agregar profesor</span>
       <AddIC className="Icon"/>
+      <span>Agregar profesor</span>
     </Boton>
-  </>
-)
+  );
 }
 
 export default BotonAgregar
 
 const Boton = styled.button`
-  width: 46%;
-  border-radius: 15px;
-  background-color: #3BAC52;
-  color: white;
-  font-size: 1.2rem;
-  padding: 0.8rem;
-  border: none;
-  transition: background-color 0.3s ease;
   display: flex;
   align-items: center;
-  margin: 2.5rem;
-  text-decoration: none;
+  gap: 0.5rem;
+  background-color: #3BAC52;
+  color: white;
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  height: fit-content;
+  cursor: pointer;
   
-  @media ${device.mobile}{
-    width: 100%;
-    padding: 1rem;
-    margin: 1rem 0;
+  .Icon {
+    font-size: 1.2rem;
   }
   
-  span {
-    width: 100%;
-    text-align: center; 
-  }
-  .Icon{
-    font-size: 2rem;
-  }
-  &:hover{
-    cursor: pointer;
+  &:hover {
     background-color: #345e3c;
+    transform: translateY(-1px);
   }
-`
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  @media ${device.mobile} {
+    width: auto;
+    padding: 0.5rem 1rem;
+    margin: 0;
+    justify-content: center;
+  }
+`;

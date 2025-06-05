@@ -1,4 +1,4 @@
-
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { IoClose } from "react-icons/io5";
 
@@ -7,7 +7,62 @@ import { IoClose } from "react-icons/io5";
 // Logica: Trae la información de los estudiantes antiguos en grupos pasados y lso muestra tambien permite descargar la lista en formato Excel.
 
 
-const ListadoHistoricEstudiantes = ({ setShowHistoricStudents }) => {
+const ListadoHistoricEstudiantes = ({ setShowHistoricStudents, grupo }) => {
+  const [estudiantes, setEstudiantes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchEstudiantes = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/main/grupos/${grupo.id_grupo}/estudiantes`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al obtener estudiantes');
+        }
+
+        const data = await response.json();
+        setEstudiantes(data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error:', err);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchEstudiantes();
+  }, [grupo.id_grupo]);
+
+  const handleDescargarExcel = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/main/grupos/${grupo.id_grupo}/estudiantes/excel`, {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al descargar Excel');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `estudiantes_grupo_${grupo.nGrupo}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error:', err);
+      alert('Error al descargar el archivo Excel');
+    }
+  };
+
+  if (loading) return <Overlay><Modal>Cargando estudiantes...</Modal></Overlay>;
+  if (error) return <Overlay><Modal>Error: {error}</Modal></Overlay>;
+
   return (
     <Overlay onClick={() => setShowHistoricStudents(false)}>
       
@@ -17,20 +72,24 @@ const ListadoHistoricEstudiantes = ({ setShowHistoricStudents }) => {
           <IoClose size={24} />
         </CloseButton>
 
-        <h2 style={{margin:"2rem"}}>Listado de Estudiantes</h2>
-        
+        <h2 style={{margin:"2rem"}}>Listado de Estudiantes - Grupo {grupo.nGrupo}</h2>
+
         <EstudiantesList>
-          {estudiantes.map((est, i) => (
-            <Estudiante key={i}>
-              <strong>{est.nombre}</strong>
-              <p>{est.correo}</p>
-            </Estudiante>
-          ))}
+          {estudiantes.length === 0 ? (
+            <p>No hay estudiantes registrados en este grupo.</p>
+          ) : (
+            estudiantes.map((est, i) => (
+              <Estudiante key={i}>
+                <strong>{est.nombre}</strong>
+                <p>{est.correo}</p>
+              </Estudiante>
+            ))
+          )}
         </EstudiantesList>
 
         <ButtonGroup>
 
-          <Button>Descargar Excel</Button>
+          <Button onClick={handleDescargarExcel}>Descargar Excel</Button>
           <Button className="cerrar" onClick={() => setShowHistoricStudents(false)}>Cerrar</Button>
         
         </ButtonGroup>
@@ -43,24 +102,6 @@ const ListadoHistoricEstudiantes = ({ setShowHistoricStudents }) => {
 
 export default ListadoHistoricEstudiantes;
 
-const estudiantes = [
-    { nombre: "Alejandra Barros", correo: "abarros25896@universidadean.edu.co" },
-    { nombre: "Mariana Torres", correo: "mtorres14788@universidadean.edu.co" },
-    { nombre: "Juan David Mondragón", correo: "jmondr65489@universidadean.edu.co" },
-    { nombre: "Daniela Fernández", correo: "dferna34986@universidadean.edu.co" },
-    { nombre: "Darío Gómez", correo: "dgomez61254@universidadean.edu.co" },
-    { nombre: "Alejandro Fernández", correo: "afernan21985@universidadean.edu.co" },
-    { nombre: "Alejandra Barros", correo: "abarros25896@universidadean.edu.co" },
-    { nombre: "Mariana Torres", correo: "mtorres14788@universidadean.edu.co" },
-    { nombre: "Juan David Mondragón", correo: "jmondr65489@universidadean.edu.co" },
-    { nombre: "Daniela Fernández", correo: "dferna34986@universidadean.edu.co" },
-    { nombre: "Darío Gómez", correo: "dgomez61254@universidadean.edu.co" },
-    { nombre: "Alejandro Fernández", correo: "afernan21985@universidadean.edu.co" },
-    { nombre: "Juan David Mondragón", correo: "jmondr65489@universidadean.edu.co" },
-    { nombre: "Daniela Fernández", correo: "dferna34986@universidadean.edu.co" },
-    { nombre: "Darío Gómez", correo: "dgomez61254@universidadean.edu.co" },
-    { nombre: "Alejandro Fernández", correo: "afernan21985@universidadean.edu.co" }
-  ];
 const Overlay = styled.div`
   position: fixed;
   top: 0;

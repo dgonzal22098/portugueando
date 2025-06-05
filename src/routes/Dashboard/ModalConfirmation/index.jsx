@@ -7,7 +7,10 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import {device} from "../../../Breakpoints/breakpoints"
+import {device} from "../../../Breakpoints/breakpoints";
+import { useState } from 'react';
+import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
 
 // Modal de confirmacion del registro de caracterizaciones del estudiante
 // Rol: Estudiante
@@ -16,6 +19,37 @@ import {device} from "../../../Breakpoints/breakpoints"
 
 
 const ModalConfirmation = ({setShowModalConfirmation, caracterizaciones, formState}) => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
+
+    const handleSubmit = async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            const response = await fetch('http://localhost:8000/main/dashboard', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formState)
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al enviar los datos');
+            }
+
+            setSuccess(true);
+            setTimeout(() => {
+                setShowModalConfirmation(false);
+            }, 2000);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const formData = [
         {
@@ -85,18 +119,26 @@ const ModalConfirmation = ({setShowModalConfirmation, caracterizaciones, formSta
 
             </InfoContainer>
 
+            {error && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                    {error}
+                </Alert>
+            )}
 
-
+            {success && (
+                <Alert severity="success" sx={{ mt: 2 }}>
+                    Datos enviados correctamente
+                </Alert>
+            )}
 
             <ButtonGroup>
-
-                <Button >Confirmar</Button>
-
-                <Button className="cancel" onClick={() => setShowModalConfirmation(false)}>Volver</Button>
-
+                <Button onClick={handleSubmit} disabled={isLoading}>
+                    {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Confirmar'}
+                </Button>
+                <Button className="cancel" onClick={() => setShowModalConfirmation(false)} disabled={isLoading}>
+                    Volver
+                </Button>
             </ButtonGroup>
-
-
         </Modal>
     </Overlay>
 }

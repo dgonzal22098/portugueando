@@ -66,6 +66,8 @@ const CrearColeccionModal = ({ setShowCrearColeccion }) => {
 
             alert('Colección creada exitosamente');
             setShowCrearColeccion(false);
+            // Recargar la página
+            window.location.reload();
         } catch (error) {
             console.error('Error al crear la colección:', error);
             alert('Error al crear la colección. Por favor, intente nuevamente.');
@@ -386,4 +388,3 @@ const OpcionesPost = styled.div`
   margin-top: 2rem;
   justify-content: center;
 `;
-

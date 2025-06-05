@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import styled from "styled-components"
 import { useNavigate } from "react-router-dom";
 import ListadoHistoricEstudiantes from "./HistoricStudents";
@@ -10,12 +10,47 @@ import {device} from "../../Breakpoints/breakpoints.js";
 
 const GruposHistoricos = () => {
     const navigate = useNavigate();
-
     const [showHistoricStudents, setShowHistoricStudents] = useState(false);
+    const [gruposHistoricos, setGruposHistoricos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [selectedGrupo, setSelectedGrupo] = useState(null);
+
+    useEffect(() => {
+        const fetchGruposHistoricos = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/main/grupos_historicos/', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al obtener grupos históricos');
+                }
+
+                const data = await response.json();
+                setGruposHistoricos(data);
+                setLoading(false);
+            } catch (err) {
+                console.error('Error:', err);
+                setError(err.message);
+                setLoading(false);
+            }
+        };
+
+        fetchGruposHistoricos();
+    }, []);
 
     const regresarOption = () => {
         navigate("/main/grupos");
-    }
+    };
+
+    const handleVerEstudiantes = (grupo) => {
+        setSelectedGrupo(grupo);
+        setShowHistoricStudents(true);
+    };
+
+    if (loading) return <p>Cargando grupos históricos...</p>;
+    if (error) return <p>Error al cargar los grupos históricos: {error}</p>;
 
     return (
         <Container>
@@ -25,18 +60,28 @@ const GruposHistoricos = () => {
                 <Button className="regresar" onClick={regresarOption}>Regresar</Button>
             </Titulo>
 
-            <GroupContainer>
-                <h3>Title</h3>
-                <p>Docente: Juan Manuel Santos</p>
-                <p>Cantidad de estudiantes: 25</p>
-                <p>Fecha de creación: pandemia jijiji</p>
-                <p>Horario: 6 - 8 pm</p>
+            {gruposHistoricos.length === 0 ? (
+                <p>No hay grupos históricos disponibles.</p>
+            ) : (
+                gruposHistoricos.map((grupo, index) => (
+                    <GroupContainer key={index}>
+                        <h3>Grupo {grupo.nGrupo}</h3>
+                        <p>Docente: {grupo.email}</p>
+                        <p>Nivel: {grupo.nivel}</p>
+                        <p>Horario: {grupo.hora}</p>
+                        <p>Fecha: {new Date(grupo.fecha).toLocaleDateString()}</p>
+                        <p>Estado: {grupo.estado ? 'Activo' : 'Inactivo'}</p>
+                        <Button onClick={() => handleVerEstudiantes(grupo)}>Ver estudiantes</Button>
+                    </GroupContainer>
+                ))
+            )}
 
-                <Button onClick={() => setShowHistoricStudents(true)}>Ver estudiantes</Button>
-
-            </GroupContainer>
-            {showHistoricStudents && <ListadoHistoricEstudiantes setShowHistoricStudents={setShowHistoricStudents}/>}
-
+            {showHistoricStudents && (
+                <ListadoHistoricEstudiantes
+                    setShowHistoricStudents={setShowHistoricStudents}
+                    grupo={selectedGrupo}
+                />
+            )}
         </Container>
     )
 }

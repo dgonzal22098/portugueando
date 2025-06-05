@@ -1,12 +1,20 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, validator
 from typing import List, Optional, Dict, Any
+from datetime import datetime, date
 
 class UserBase(BaseModel):
     name: str
     email: str
 
+    @validator('email')
+    def validate_email_domain(cls, v):
+        if not v.lower().endswith('@universidadean.edu.co'):
+            raise ValueError('Solo se permiten correos con dominio @universidadean.edu.co')
+        return v.lower()
+
 class UserCreate(UserBase):
-    password: str
+    rol: str
+    estado: Optional[int] = 1
 
 
 class UserLogin(BaseModel):
@@ -17,8 +25,7 @@ class UserLogin(BaseModel):
 class User(UserBase):
     id: int
     estado: int
-    rol: str  # ← Agregar campo
-    hashed_password: str
+    rol: str
 
     class Config:
         from_attributes = True
@@ -87,3 +94,29 @@ class ColeccionResponse(ColeccionBase):
     class Config:
         from_attributes = True
 
+class GrupoBase(BaseModel):
+    email: str
+    nGrupo: int
+    hora: Optional[str]
+    fecha: Optional[datetime]
+    nivel: int
+    lider: Optional[bool] = False
+    estado: Optional[bool] = True
+
+class GrupoCreate(GrupoBase):
+    pass
+
+class GrupoResponse(GrupoBase):
+    id_grupo: int
+
+    class Config:
+        from_attributes = True
+
+class GrupoInfo(BaseModel):
+    nivel: int
+    total_grupos: int
+    grupos_activos: int
+    grupos_inactivos: int
+
+    class Config:
+        from_attributes = True

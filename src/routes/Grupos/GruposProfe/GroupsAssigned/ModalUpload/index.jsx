@@ -8,23 +8,53 @@ import {device} from "../../../../../Breakpoints/breakpoints.js";
 // Funcion: Este modal recibe el archivo excel con los datos de los nuevos estudiantes en una lista y lo envia a la base de datos para registrar a los nuevos estudiantes
 // Logica: Recibir el archivo de excel, leer los datos y enviarlos a la base de datos, generar un pop up cuando el archivo se haya subido de forma correcta.
 
-const UploadFile = ({setShowUploadModal, setStudentUploaded}) => {
+const UploadFile = ({setShowUploadModal, setStudentUploaded, grupoId}) => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [file, setFile] = useState(null);
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
 
-    
-    const handleSubmit = (e) => {
-      e.preventDefault();
-    }
-    const handleUpload = (e) => {
+    const handleUpload = async (e) => {
         e.preventDefault();
-        setShowSuccess(true);
-        setStudentUploaded(true);
+        if (!file) {
+            setError('Por favor seleccione un archivo');
+            return;
+        }
 
-        setTimeout(() => {
-            setShowSuccess(false);
-            setShowUploadModal(false);
-        }, 2000);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('grupo_id', grupoId);
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch('http://localhost:8000/api/upload-students', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || 'Error al subir el archivo');
+            }
+
+            console.log('Respuesta del servidor:', data);
+            setShowSuccess(true);
+            setStudentUploaded(true);
+
+            setTimeout(() => {
+                setShowSuccess(false);
+                setShowUploadModal(false);
+            }, 2000);
+
+        } catch (err) {
+            console.error('Error al subir archivo:', err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (
@@ -37,7 +67,6 @@ const UploadFile = ({setShowUploadModal, setStudentUploaded}) => {
 
                 <Modal 
                 onClick={(e) => e.stopPropagation()}
-                onSubmit={handleSubmit}
                 >
                     
                     <CloseButton onClick={() => setShowUploadModal(false)}>
@@ -54,10 +83,15 @@ const UploadFile = ({setShowUploadModal, setStudentUploaded}) => {
                         onChange={(e) => setFile(e.target.files[0]) }
                     />
 
+                    {error && <ErrorMessage>{error}</ErrorMessage>}
+
                     <ModalButtons>
 
-                        <Confirm onClick={handleUpload}>
-                            Subir archivo
+                        <Confirm
+                            onClick={handleUpload}
+                            disabled={loading}
+                        >
+                            {loading ? 'Subiendo...' : 'Subir archivo'}
                         </Confirm>
 
                         <Cancel onClick={() => setShowUploadModal(false)}>Cancelar</Cancel>
@@ -168,4 +202,8 @@ const SuccessPopup = styled.div`
   }
 `;
 
-  
+const ErrorMessage = styled.div`
+    color: #ff0033;
+    margin: 10px 0;
+    text-align: center;
+`;

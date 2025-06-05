@@ -1,22 +1,44 @@
-import {Navigate} from "react-router-dom"
-import {useAuth} from "../../auth"
+import { Navigate } from "react-router-dom";
+import { useUser } from "../../context/UserContext";
+import { useEffect, useState } from "react";
 
-const ProtectedRoute = ({children}) => {
-    const {user, isAuthenticated} = useAuth();
+const ProtectedRoute = ({ children }) => {
+  const { userData, setUserData } = useUser();
+  const [isLoading, setIsLoading] = useState(true);
 
-    console.log('ProtectedRoute - Auth State:', {
-        isAuthenticated,
-        user
-    });
+  useEffect(() => {
+    const verificarSesion = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/verificar-sesion/', {
+          credentials: 'include'
+        });
 
-    if (!isAuthenticated) {
-        console.log('No autenticado, redirigiendo a login');
-        return <Navigate to="/"/>;
-    }
+        if (response.ok) {
+          const data = await response.json();
+          setUserData(data);
+        } else {
+          setUserData(null);
+        }
+      } catch (error) {
+        console.error('Error al verificar sesión:', error);
+        setUserData(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    console.log('Usuario autenticado, permitiendo acceso');
-    return children;
+    verificarSesion();
+  }, [setUserData]);
+
+  if (isLoading) {
+    return <div>Cargando...</div>;
+  }
+
+  if (!userData) {
+    return <Navigate to="/" />;
+  }
+
+  return children;
 }
 
-export default ProtectedRoute
-
+export default ProtectedRoute;

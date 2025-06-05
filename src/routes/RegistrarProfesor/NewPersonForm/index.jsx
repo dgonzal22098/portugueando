@@ -1,5 +1,5 @@
-import styled from "styled-components"
-import { useState } from "react"
+import styled from 'styled-components';
+import React, { useState } from 'react';
 import ModalNewProfesor from "./ModalNewProfesor";
 import {device} from "../../../Breakpoints/breakpoints.js"
 
@@ -12,45 +12,77 @@ const NewPersonForm = ({setMostrarFormulario}) => {
 
   const [showProfesorModal, setShowProfesorModal] = useState(false);
   const [profesorInfo, setProfesorInfo] = useState({});
+  const [formErrors, setFormErrors] = useState({});
 
+
+  const fields = [
+    { name: "name", label: "Nombres y apellidos", type: "text", placeholder: "Ingrese nombre completo..." },
+    { name: "email", label: "Correo institucional", type: "email", placeholder: "Ingrese el correo institucional..." },
+  ];
+
+  const validateFields = () => {
+    const errors = {};
+    const emailRegex = /^[^\s@]+@universidadean\.edu\.co$/i;
+    fields.forEach(({ name }) => {
+      const value = profesorInfo[name] || "";
+
+      if (!value.trim()) {
+        errors[name] = "Este campo es obligatorio";
+      } else if (name === "name" && value.trim().length < 3) {
+        errors[name] = "Debe tener al menos 3 caracteres";
+      } else if (name === "email") {
+        if (!emailRegex.test(value)) {
+          errors[name] = "Debe ser un correo @universidadean.edu.co válido";
+        }
+      }
+    });
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-  }
+    if (validateFields()) {
+      setShowProfesorModal(true);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setProfesorInfo(prev => ({ ...prev, [name]:value }));
-  }
+    setProfesorInfo(prev => ({ ...prev, [name]: value }));
+    if (formErrors[name]) {
+      setFormErrors(prev => ({ ...prev, [name]: "" }));
+    }
+  };
 
   return (
     <Container>
-        <Titulo>Registro de nuevo docente</Titulo>
-        <Form onSubmit={handleSubmit}>
-          {fields.map(({name, label, type, placeholder}) => (
-            <ContainerInput key={name}>
-              <Label>{label}</Label>
-              <Input 
-              type={type} 
+      <Titulo>Registro de nuevo docente</Titulo>
+      <Form onSubmit={handleSubmit}>
+        {fields.map(({ name, label, type, placeholder }) => (
+          <ContainerInput key={name}>
+            <Label>{label}</Label>
+            <Input
+              type={type}
               placeholder={placeholder}
               name={name}
               value={profesorInfo[name] || ""}
               onChange={handleChange}
-              />
-            </ContainerInput>
-          ))}
-          <ContainerInput>
-            <Label>Estado</Label>
-            <Select>
-              <option>Selecciona una opción: </option>
-              <option>Activo</option>
-              <option>Inactivo</option>
-            </Select>
+            />
+            {formErrors[name] && <ErrorMsg>{formErrors[name]}</ErrorMsg>}
           </ContainerInput>
+        ))}
 
           <ButtonGroup>
-            <Boton onClick={() => setShowProfesorModal(true)}>Agregar</Boton>
-            <Boton className="Cancel" onClick={() => setMostrarFormulario(false)}>Cancelar</Boton>
+            <Boton type="submit">Agregar</Boton>
+            <Boton
+              className="Cancel"
+              type="button"
+              onClick={() => setMostrarFormulario(false)}
+            >
+              Cancelar
+            </Boton>
           </ButtonGroup>
         </Form>
         {showProfesorModal && <ModalNewProfesor 
@@ -61,12 +93,26 @@ const NewPersonForm = ({setMostrarFormulario}) => {
   )
 }
 
+const Input = styled.input`
+  width: 70%;
+  padding: 19px;
+  margin-bottom: 5px;  // Reducido para espacio de errores
+  border-radius: 10px;
+  border: 0.5px ${props => props.hasError ? 'red' : 'grey'} solid;
+`;
+
+const ErrorMsg = styled.span`
+  color: red;
+  font-size: 0.9rem;
+  margin-left: 1rem;
+  margin-bottom: 1rem;
+  display: block;
+`;
+
 export default NewPersonForm
 
-const fields = [
-  {name:"name",label:"Nombres y apellidos", type:"text",placeholder:"Ingrese nombre completo..."},
-  {name:"email",label:"Correo institucional", type:"text",placeholder:"Ingrese el correo institucional..."},
-]
+
+
 const Container = styled.div`
   width: 85%;
   height: fit-content;
@@ -99,13 +145,7 @@ const ContainerInput = styled.form`
   justify-content: space-between;
   align-items: center;
 `
-const Input = styled.input`
-  width: 70%;
-  padding: 19px;
-  margin-bottom: 20px;
-  border-radius: 10px;
-  border: 0.5px grey solid;
-`
+
 const Label = styled.label`
   margin: 0 0 1rem 1rem;
 `
